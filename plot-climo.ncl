@@ -1,0 +1,293 @@
+load "./ncl_utils/shapefile_utils.ncl"
+
+begin
+
+models = (/"JRA","NLDAS","E3SM","L15"/)
+
+f1 = addfile("./netcdf/"+models(0)+"_1985to2005_masked.nc","r")
+f2 = addfile("./netcdf/"+models(1)+"_1985to2005_masked.nc","r")
+f3 = addfile("./netcdf/"+models(2)+"_1985to2005_masked.nc","r")
+f4 = addfile("./netcdf/"+models(3)+"_1985to2005_masked.nc","r")
+
+shpfilename="./shapes/srb/srb.shp"
+shp = addfile(shpfilename,"r")
+
+; settings
+;var="SWE"
+winter_only=True
+
+;debugging
+check_L15=False
+check_NLDAS=False
+
+rof1 = f1->$var$
+rof2 = f2->$var$
+rof3 = f3->$var$
+rof4 = f4->$var$
+
+rof1_time = cd_calendar(f1->time,0)
+rof1_month = rof1_time(:,1)
+rof1_2D = conform_dims(dimsizes(rof1),rof1_month,0)
+
+rof2_time = cd_calendar(f1->time,0)
+rof2_month = rof2_time(:,1)
+rof2_2D = conform_dims(dimsizes(rof2),rof2_month,0)
+
+rof3_time = cd_calendar(f1->time,0)
+rof3_month = rof3_time(:,1)
+rof3_2D = conform_dims(dimsizes(rof3),rof3_month,0)
+
+rof4_time = cd_calendar(f1->time,0)
+rof4_month = rof4_time(:,1)
+rof4_2D = conform_dims(dimsizes(rof4),rof4_month,0)
+
+if (winter_only) then
+  rof1 = where(rof1_2D.lt.11 .and. rof1_2D.gt.4,rof1@_FillValue,rof1)
+  rof2 = where(rof2_2D.lt.11 .and. rof2_2D.gt.4,rof2@_FillValue,rof2)
+  rof3 = where(rof3_2D.lt.11 .and. rof3_2D.gt.4,rof3@_FillValue,rof3)
+  rof4 = where(rof4_2D.lt.11 .and. rof4_2D.gt.4,rof4@_FillValue,rof4)
+end if
+
+;if (var .eq. "dSWE") then
+;  rof1=abs(rof1)
+;;  rof2=abs(rof2)
+;  rof3=abs(rof3)
+;  rof4=abs(rof4)
+;end if
+; if dSWE, set all 0 and positive values to nans
+if (var .eq. "dSWE") then
+  rof1=where(rof1 .lt. 0.000,rof1,rof1@_FillValue)
+  rof2=where(rof2 .lt. 0.000,rof2,rof2@_FillValue)
+  rof3=where(rof3 .lt. 0.000,rof3,rof3@_FillValue)
+  rof4=where(rof4 .lt. 0.000,rof4,rof4@_FillValue)
+end if
+
+if (check_L15) then
+  delete(f3)
+  delete(rof3)
+  f3 = addfile("./netcdf/q.mon.ltm.nc","r")
+  rof3 = f3->q
+  rof3 = rof3*86400.
+end if
+
+if (check_NLDAS) then
+  delete(f1)
+  delete(rof1)
+  filelist = systemfunc("ls ./NLDAS2-Verif/NLDAS_VIC0125_MC*.nc")
+  print(filelist)
+  f1 = addfiles(filelist,"r")
+  ListSetType (f1, "join") 
+  rof1 = f1[:]->SSRUN_110_SFC_S51
+  rof1 = rof1 / 30.
+  rof1!1="lat"
+  rof1!2="lon"
+  rof1&lat=f1[0]->lat_110
+  rof1&lon=f1[0]->lon_110
+  printVarSummary(rof1)
+  
+  delete(f3)
+  delete(rof3)
+  f3 = addfile("./NLDAS2-Verif/SSRUN_GDS0_SFC_acc1h_VIC_avg.nc","r")
+  rof3 = f3->SSRUN_GDS0_SFC_acc1h
+  rof3 = rof3 * 24.
+  rof3!1="lat"
+  rof3!2="lon"
+  rof3&lat=f3->g0_lat_0
+  rof3&lon=f3->g0_lon_1
+  printVarSummary(rof3)
+end if
+
+rof1&lat@units="degrees_north"
+rof1&lon@units="degrees_east"
+rof1@_FillValue=-999.9
+rof1 = where(isnan_ieee(rof1),rof1@_FillValue,rof1)
+
+rof2&lat@units="degrees_north"
+rof2&lon@units="degrees_east"
+rof2@_FillValue=-999.9
+rof2 = where(isnan_ieee(rof2),rof2@_FillValue,rof2)
+
+rof3&lat@units="degrees_north"
+rof3&lon@units="degrees_east"
+rof3@_FillValue=-999.9
+rof3 = where(isnan_ieee(rof3),rof3@_FillValue,rof3)
+
+rof4&lat@units="degrees_north"
+rof4&lon@units="degrees_east"
+rof4@_FillValue=-999.9
+rof4 = where(isnan_ieee(rof4),rof4@_FillValue,rof4)
+
+rof1_avg = dim_avg_n_Wrap(rof1,0)
+rof2_avg = dim_avg_n_Wrap(rof2,0)
+rof3_avg = dim_avg_n_Wrap(rof3,0)
+rof4_avg = dim_avg_n_Wrap(rof4,0)
+
+rad    = 4.0*atan(1.0)/180.0
+rof1_avg_avg = wgt_areaave_Wrap(rof1_avg, cos(rof1_avg&lat*rad), 1.0, 1)
+rof2_avg_avg = wgt_areaave_Wrap(rof2_avg, cos(rof2_avg&lat*rad), 1.0, 1)
+rof3_avg_avg = wgt_areaave_Wrap(rof3_avg, cos(rof3_avg&lat*rad), 1.0, 1)
+rof4_avg_avg = wgt_areaave_Wrap(rof4_avg, cos(rof4_avg&lat*rad), 1.0, 1)
+
+print("min: "+min(rof1_avg)+"   max: "+max(rof1_avg)+"     mean: "+avg(rof1_avg)+"     wgt_avg: "+rof1_avg_avg)
+print("min: "+min(rof2_avg)+"   max: "+max(rof2_avg)+"     mean: "+avg(rof2_avg)+"     wgt_avg: "+rof2_avg_avg)
+print("min: "+min(rof3_avg)+"   max: "+max(rof3_avg)+"     mean: "+avg(rof3_avg)+"     wgt_avg: "+rof3_avg_avg)
+print("min: "+min(rof4_avg)+"   max: "+max(rof4_avg)+"     mean: "+avg(rof4_avg)+"     wgt_avg: "+rof4_avg_avg)
+
+system("mkdir -p ./climo")
+
+wks = gsn_open_wks("pdf","./climo/climo_comp_panel_"+var)              ; send graphics to PNG file
+
+plot = new(4,graphic)                          ; create a plot array
+
+res                     = True
+res@gsnDraw             = False           ; don't draw
+res@gsnFrame            = False           ; don't advance frame
+res@cnInfoLabelOn       = False           ; turn off cn info label
+res@cnFillOn            = True            ; turn on color
+res@lbLabelBarOn        = False           ; turn off individual cb's
+res@gsnAddCyclic = False
+res@cnFillMode = "RasterFill"
+res@cnLinesOn = False
+res@cnLineLabelsOn  = False
+
+if (var .eq. "ROF")
+  res@cnLevelSelectionMode =  "ManualLevels"   
+  res@cnMinLevelValF       = 0.05
+  res@cnMaxLevelValF       = 0.8
+  res@cnLevelSpacingF      = 0.05
+  cmap                     := read_colormap_file("MPL_BuGn")
+  res@cnFillPalette        := cmap   
+end if
+if (var .eq. "PRECIP")
+  res@cnLevelSelectionMode =  "ManualLevels"   
+  res@cnMinLevelValF       = 2.1
+  res@cnMaxLevelValF       = 3.8
+  res@cnLevelSpacingF      = 0.1
+  cmap                     := read_colormap_file("cmocean_matter")
+  res@cnFillPalette        := cmap  
+end if
+if (var .eq. "SWE")
+  res@cnLevelSelectionMode =  "ManualLevels"   
+  res@cnMinLevelValF       = 0.
+  res@cnMaxLevelValF       = 40.0
+  res@cnLevelSpacingF      = 1.
+  cmap                     := read_colormap_file("cmocean_dense")
+  res@cnFillPalette        := cmap
+end if
+if (var .eq. "dSWE")
+  res@cnLevelSelectionMode =  "ManualLevels"   
+  res@cnMinLevelValF       =  -4.0
+  res@cnMaxLevelValF       =  -1.2
+  res@cnLevelSpacingF      =  0.1
+  cmap                     := read_colormap_file("MPL_YlGnBu")
+  res@cnFillPalette        := cmap(::-1,:)
+end if
+  
+res@mpMaxLatF=43.1
+res@mpMinLatF=39.3
+res@mpMinLonF=280.7
+res@mpMaxLonF=285.7
+
+res@mpDataBaseVersion = "MediumRes"
+res@mpOutlineBoundarySets = "USStates"
+res@mpOutlineDrawOrder = "PostDraw" 
+
+res@gsnMajorLatSpacing = 1.0
+res@gsnMajorLonSpacing = 2.0
+
+tickLength=0.001
+res@tmXTMajorLengthF     = tickLength
+res@tmXBMajorLengthF     = tickLength
+res@tmYLMajorLengthF     = tickLength
+res@tmYRMajorLengthF     = tickLength
+
+tickHeight=0.018
+res@tmXTLabelFontHeightF  =tickHeight
+res@tmXBLabelFontHeightF  =tickHeight
+res@tmYLLabelFontHeightF  =tickHeight
+res@tmYRLabelFontHeightF  =tickHeight
+
+res@gsnLeftString = var
+if (var .eq. "SWE") then
+  res@gsnRightString = "mm"
+else
+  res@gsnRightString = "mm/day"
+end if
+
+res@gsnCenterString = models(0)
+res@txFontHeightF=0.024
+
+plot(0) = gsn_csm_contour_map(wks,rof1_avg,res)
+
+res@tmYLLabelsOn  = False
+res@gsnCenterString = models(1)
+plot(1) = gsn_csm_contour_map(wks,rof2_avg,res) 
+
+res@gsnCenterString = models(2)
+plot(2) = gsn_csm_contour_map(wks,rof3_avg,res) 
+
+res@gsnCenterString = models(3)
+plot(3) = gsn_csm_contour_map(wks,rof4_avg,res) 
+
+plres = True
+plres@gsLineColor = "black"
+plres@gsLineThicknessF = 3.0
+x = shp->x
+y = shp->y
+
+lines_id0 = gsn_add_polyline(wks,plot(0),y,x,plres)
+lines_id1 = gsn_add_polyline(wks,plot(1),y,x,plres)
+lines_id2 = gsn_add_polyline(wks,plot(2),y,x,plres)
+lines_id3 = gsn_add_polyline(wks,plot(3),y,x,plres)
+
+txres=True
+txres@txBackgroundFillColor = "White"
+txres@txFontHeightF=0.033
+amres=True
+amres@amParallelPosF   = 0.5    ; This is the right edge of the plot.
+amres@amOrthogonalPosF = 0.5    ; This is the bottom edge of the plot.
+amres@amJust           = "BottomRight"
+
+txid0 = gsn_create_text(wks, sprintf("%4.2f", rof1_avg_avg), txres)
+annoid0 = gsn_add_annotation(plot(0), txid0, amres)
+
+txid1 = gsn_create_text(wks, sprintf("%4.2f", rof2_avg_avg), txres)
+annoid1 = gsn_add_annotation(plot(1), txid1, amres)
+
+txid2 = gsn_create_text(wks, sprintf("%4.2f", rof3_avg_avg), txres)
+annoid2 = gsn_add_annotation(plot(2), txid2, amres)
+
+txid3 = gsn_create_text(wks, sprintf("%4.2f", rof4_avg_avg), txres)
+annoid3 = gsn_add_annotation(plot(3), txid3, amres)
+
+;************************************************
+; create panel
+;************************************************
+resP                     = True                ; modify the panel plot
+;resP@gsnPanelMainString = "Climo comparison"
+
+resP@gsnPanelLabelBar    = True
+resP@lbLabelFontHeightF  = 0.012
+
+;resP@gsnPanelXF = (/-1,0.59/)
+resP@amJust = "TopLeft"
+if (var .eq. "PRECIP") then
+  resP@gsnPanelFigureStrings= (/"a.","b.","c.","d."/)
+else if (var .eq. "ROF") then
+  resP@gsnPanelFigureStrings= (/"e.","f.","g.","h."/)
+else if (var .eq. "dSWE") then
+  resP@gsnPanelFigureStrings= (/"i.","j.","k.","l."/)
+else if (var .eq. "SWE") then
+  resP@gsnPanelFigureStrings= (/"m.","n.","o.","p."/)
+else
+end if
+end if
+end if
+end if
+resP@gsnPanelFigureStringsFontHeightF  = 0.018
+
+gsn_panel(wks,plot,(/1,4/),resP)               ; now draw as one plot
+
+
+
+end

@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Activate env
+#conda activate meteo
+
+python analysis.py JRA -1
+python analysis.py L15 -1
+python analysis.py E3SM -1
+python analysis.py NLDAS -1
+
+python analysis.py JRA 95
+python analysis.py L15 95
+python analysis.py E3SM 95
+python analysis.py NLDAS 95
+
+## create supercat
+cd output
+cat *csv > supercat.csv
+cd ..
+
+## Do histograms
+python histograms.py
+
+## get climatological means
+ncl plot-climo.ncl 'var="SWE"'
+ncl plot-climo.ncl 'var="dSWE"'
+ncl plot-climo.ncl 'var="ROF"'
+ncl plot-climo.ncl 'var="PRECIP"'
