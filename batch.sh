@@ -15,7 +15,8 @@ python analysis.py NLDAS 95
 
 ## create supercat
 cd output
-cat *csv > supercat.csv
+cat *csv > supercat.TMP
+mv supercat.TMP supercat.csv
 cd ..
 
 ## Do histograms
