@@ -223,7 +223,7 @@ def get_streamdata(years):
 
     groupdays = streamraw.groupby("datetime").mean();
     truedays = [np.datetime64(day) for day in groupdays.index]
-    truedays2 = pd.date_range(years[0]+"-01-01", years[-1]+"-12-31");
+    truedays2 = pd.date_range(years[0]+"-01-01",str(int(years[-1]) + 1)+"-12-31");
     #groupdays  = groupdays.reindex(labels = "datetime", index = truedays)
     groupdays.index = truedays
 
@@ -266,7 +266,9 @@ def get_evpcts(evdf, streamsuss, swindow):
 
         streamdays = list(pd.date_range(sd, sd+timedelta(days = evlen+swindow)))
 
-        if streamdays[-1].year > evdf["Start Dates"].iloc[len(evdf["Start Dates"])-1].year:
+        # CMZ: 8/16/22 --> for now we'll assume we have streamflow data past end of model data
+        #if streamdays[-1].year > evdf["Start Dates"].iloc[len(evdf["Start Dates"])-1].year:
+        if 0 == 1:
             # If our "window" goes past the end of the dataset, let's just call it a day and add some "nans"
             evdf["Streamflow Percentiles"].loc[event] = -99999.0;
             evdf["Max Streamflow Percentile"].loc[event] = -99999.0;
