@@ -267,15 +267,18 @@ def get_evpcts(evdf, streamsuss, swindow):
         streamdays = list(pd.date_range(sd, sd+timedelta(days = evlen+swindow)))
 
         if streamdays[-1].year > evdf["Start Dates"].iloc[len(evdf["Start Dates"])-1].year:
-            pass
+            # If our "window" goes past the end of the dataset, let's just call it a day and add some "nans"
+            evdf["Streamflow Percentiles"].loc[event] = -99999.0;
+            evdf["Max Streamflow Percentile"].loc[event] = -99999.0;
         else:
             streamvals = streamsuss.reindex(streamdays);
             #streamvals = streamsuss.loc[streamdays]; 
             pcts = get_prank(streamsuss, streamvals);
-            
             evdf["Streamflow Percentiles"].loc[event] = pcts;
             evdf["Max Streamflow Percentile"].loc[event] = np.max(pcts);
-            evdf["Starting Streamflow Percentile"].loc[event] = pcts[0];
+        
+        # Starting streamflow percentile is *always* valid!
+        evdf["Starting Streamflow Percentile"].loc[event] = pcts[0];
 
     return evdf
     
