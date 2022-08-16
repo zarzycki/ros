@@ -3,15 +3,15 @@
 # Activate env
 #conda activate meteo
 
-python analysis.py JRA -1
 python analysis.py L15 -1
-python analysis.py E3SM -1
 python analysis.py NLDAS -1
+python analysis.py JRA -1
+python analysis.py E3SM -1
 
-python analysis.py JRA 95
 python analysis.py L15 95
-python analysis.py E3SM 95
 python analysis.py NLDAS 95
+python analysis.py JRA 95
+python analysis.py E3SM 95
 
 ## create supercat
 cd output
@@ -20,7 +20,8 @@ mv supercat.TMP supercat.csv
 cd ..
 
 ## Do histograms
-python histograms.py
+python histograms.py '-1.0'
+python histograms.py '95.0'
 
 ## get climatological means
 ncl plot-climo.ncl 'var="SWE"'
