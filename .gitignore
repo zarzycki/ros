@@ -1,3 +1,5 @@
+*.png
+.DS_Store
 __pycache__*
 *.pdf
 *.nc
