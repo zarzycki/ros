@@ -1,9 +1,9 @@
-load "./shapefile_utils.ncl"
+load "../ncl_utils/shapefile_utils.ncl"
 
-model="NLDAS"
+;model="NLDAS"
 
 f = addfile(model+"_1985to2005_merged.nc","r")
-shpfilename="/Users/cmz5202/PSUGdrive/Pettett/shapefiles/srb.shp"
+shpfilename=repopath+"/shapes/srb/srb.shp"
 shp = addfile(shpfilename,"r")
 print_shapefile_info(shpfilename)
 plot_shapefile(shpfilename)
