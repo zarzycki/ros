@@ -255,10 +255,14 @@ def get_evpcts(evdf, streamsuss, swindow):
 
     #This function returns a list of percentiles given a list of streamflow values. This is used to find the
     #streamflow percentiles for each day (where stream data was recorded) in each event.
+    nstartdates = evdf["Start Dates"].size
+    emptylist = []
+    for xx in range(nstartdates):
+      emptylist.append([[]])
 
-    evdf["Streamflow Percentiles"] = ([] for i in range(len(evdf["Start Dates"])))
-    evdf["Max Streamflow Percentile"] = ([] for i in range(len(evdf["Start Dates"])))
-    evdf["Starting Streamflow Percentile"] = ([] for i in range(len(evdf["Start Dates"])))
+    evdf["Streamflow Percentiles"] = emptylist
+    evdf["Max Streamflow Percentile"] = emptylist
+    evdf["Starting Streamflow Percentile"] = emptylist
     for event in evdf["Event"]:
         sd = evdf["Start Dates"].loc[event]
         # The -1 avoids double-counting the first day. The int() is because this is by default in np.int64 for some reason
