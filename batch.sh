@@ -19,6 +19,12 @@ cat *csv > supercat.TMP
 mv supercat.TMP supercat.csv
 cd ..
 
+## check correlations
+python check_correlations.py
+cd corr_stats
+cat *offonee3smcorr.csv > corr_catted.csv
+cd ..
+
 ## Do histograms
 python histograms.py '-1.0'
 python histograms.py '95.0'
