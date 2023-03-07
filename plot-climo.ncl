@@ -2,7 +2,7 @@ load "./ncl_utils/shapefile_utils.ncl"
 
 begin
 
-models = (/"JRA","NLDAS","E3SM","L15"/)
+models = (/"L15","NLDAS","JRA","E3SM"/)
 
 f1 = addfile("./netcdf/"+models(0)+"_1985to2005_masked.nc","r")
 f2 = addfile("./netcdf/"+models(1)+"_1985to2005_masked.nc","r")
@@ -275,9 +275,9 @@ if (var .eq. "PRECIP") then
   resP@gsnPanelFigureStrings= (/"a.","b.","c.","d."/)
 else if (var .eq. "ROF") then
   resP@gsnPanelFigureStrings= (/"e.","f.","g.","h."/)
-else if (var .eq. "dSWE") then
-  resP@gsnPanelFigureStrings= (/"i.","j.","k.","l."/)
 else if (var .eq. "SWE") then
+  resP@gsnPanelFigureStrings= (/"i.","j.","k.","l."/)
+else if (var .eq. "dSWE") then
   resP@gsnPanelFigureStrings= (/"m.","n.","o.","p."/)
 else
 end if
