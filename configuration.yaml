@@ -1,0 +1,11 @@
+name: ros-metrics
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - numpy
+  - pandas
+  - scipy
+  - xarray
+  - matplotlib
+  - jpeg==9e

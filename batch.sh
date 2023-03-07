@@ -1,7 +1,8 @@
-#!/bin/bash
+#!/bin/bash -l
 
-# Activate env
-#conda activate meteo
+conda activate ros-metrics
+
+set -e
 
 python analysis.py L15 -1
 python analysis.py NLDAS -1
@@ -17,11 +18,13 @@ python analysis.py E3SM 95
 cd output
 cat *csv > supercat.TMP
 mv supercat.TMP supercat.csv
+cd ..
 
 ## check correlations
 python check_correlations.py
 cd corr_stats
 cat *offonee3smcorr.csv > corr_catted.csv
+cd ..
 
 ## Do histograms
 python histograms.py '-1.0'
