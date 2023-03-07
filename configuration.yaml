@@ -9,3 +9,4 @@ dependencies:
   - xarray
   - matplotlib
   - jpeg==9e
+  - netcdf4
