@@ -64,12 +64,12 @@ preoffonenldas = pd.DataFrame({"JRA": jrapre[:-1:], "L15": l15pre[:-1:], "NLDAS"
 preoffonee3sm = pd.DataFrame({"JRA": jrapre[:-1:], "L15": l15pre[:-1:], "NLDAS": nldaspre[:-1:], "E3SM": e3smpre[1::]})
 
 if PRINT_ALL_MATRICES:
-	preoffzero.corr(method = "pearson").to_csv(OUTPUTDIR+"/preoffzerocorr.csv")
-	preoffonejra.corr(method = "pearson").to_csv(OUTPUTDIR+"/preoffonejracorr.csv")
-	preoffnegonejra.corr(method = "pearson").to_csv(OUTPUTDIR+"/preoffnegonejracorr.csv")
-	preoffonel15.corr(method = "pearson").to_csv(OUTPUTDIR+"/preoffonel15corr.csv")
-	preoffonenldas.corr(method = "pearson").to_csv(OUTPUTDIR+"/preoffonenldascorr.csv")
-  preoffonee3sm.corr(method = "pearson").to_csv(OUTPUTDIR+"/preoffonee3smcorr.csv")
+    preoffzero.corr(method = "pearson").to_csv(OUTPUTDIR+"/preoffzerocorr.csv")
+    preoffonejra.corr(method = "pearson").to_csv(OUTPUTDIR+"/preoffonejracorr.csv")
+    preoffnegonejra.corr(method = "pearson").to_csv(OUTPUTDIR+"/preoffnegonejracorr.csv")
+    preoffonel15.corr(method = "pearson").to_csv(OUTPUTDIR+"/preoffonel15corr.csv")
+    preoffonenldas.corr(method = "pearson").to_csv(OUTPUTDIR+"/preoffonenldascorr.csv")
+    preoffonee3sm.corr(method = "pearson").to_csv(OUTPUTDIR+"/preoffonee3smcorr.csv")
 
 
 rofoffzero = pd.DataFrame({"JRA": jrarof, "L15": l15rof, "NLDAS": nldasrof, "E3SM": e3smrof});
@@ -81,12 +81,12 @@ rofoffonenldas = pd.DataFrame({"JRA": jrarof[:-1:], "L15": l15rof[:-1:], "NLDAS"
 rofoffonee3sm = pd.DataFrame({"JRA": jrarof[:-1:], "L15": l15rof[:-1:], "NLDAS": nldasrof[:-1:], "E3SM": e3smrof[1::]})
 
 if PRINT_ALL_MATRICES:
-	rofoffzero.corr(method = "pearson").to_csv(OUTPUTDIR+"/rofoffzerocorr.csv")
-	rofoffonejra.corr(method = "pearson").to_csv(OUTPUTDIR+"/rofoffonejracorr.csv")
-	rofoffnegonejra.corr(method = "pearson").to_csv(OUTPUTDIR+"/rofoffnegonejracorr.csv")
-	rofoffonel15.corr(method = "pearson").to_csv(OUTPUTDIR+"/rofoffonel15corr.csv")
-	rofoffonenldas.corr(method = "pearson").to_csv(OUTPUTDIR+"/rofoffonenldascorr.csv")
-  rofoffonee3sm.corr(method = "pearson").to_csv(OUTPUTDIR+"/rofoffonee3smcorr.csv")
+    rofoffzero.corr(method = "pearson").to_csv(OUTPUTDIR+"/rofoffzerocorr.csv")
+    rofoffonejra.corr(method = "pearson").to_csv(OUTPUTDIR+"/rofoffonejracorr.csv")
+    rofoffnegonejra.corr(method = "pearson").to_csv(OUTPUTDIR+"/rofoffnegonejracorr.csv")
+    rofoffonel15.corr(method = "pearson").to_csv(OUTPUTDIR+"/rofoffonel15corr.csv")
+    rofoffonenldas.corr(method = "pearson").to_csv(OUTPUTDIR+"/rofoffonenldascorr.csv")
+    rofoffonee3sm.corr(method = "pearson").to_csv(OUTPUTDIR+"/rofoffonee3smcorr.csv")
 
 
 dsweoffzero = pd.DataFrame({"JRA": jradswe, "L15": l15dswe, "NLDAS": nldasdswe, "E3SM": e3smdswe});
@@ -98,12 +98,12 @@ dsweoffonenldas = pd.DataFrame({"JRA": jradswe[:-1:], "L15": l15dswe[:-1:], "NLD
 dsweoffonee3sm = pd.DataFrame({"JRA": jradswe[:-1:], "L15": l15dswe[:-1:], "NLDAS": nldasdswe[:-1:], "E3SM": e3smdswe[1::]})
 
 if PRINT_ALL_MATRICES:
-	dsweoffzero.corr(method = "pearson").to_csv(OUTPUTDIR+"/dsweoffzerocorr.csv")
-	dsweoffonejra.corr(method = "pearson").to_csv(OUTPUTDIR+"/dsweoffonejracorr.csv")
-	dsweoffnegonejra.corr(method = "pearson").to_csv(OUTPUTDIR+"/dsweoffnegonejracorr.csv")
-	dsweoffonel15.corr(method = "pearson").to_csv(OUTPUTDIR+"/dsweoffonel15corr.csv")
-	dsweoffonenldas.corr(method = "pearson").to_csv(OUTPUTDIR+"/dsweoffonenldascorr.csv")
-  dsweoffonee3sm.corr(method = "pearson").to_csv(OUTPUTDIR+"/dsweoffonee3smcorr.csv")
+    dsweoffzero.corr(method = "pearson").to_csv(OUTPUTDIR+"/dsweoffzerocorr.csv")
+    dsweoffonejra.corr(method = "pearson").to_csv(OUTPUTDIR+"/dsweoffonejracorr.csv")
+    dsweoffnegonejra.corr(method = "pearson").to_csv(OUTPUTDIR+"/dsweoffnegonejracorr.csv")
+    dsweoffonel15.corr(method = "pearson").to_csv(OUTPUTDIR+"/dsweoffonel15corr.csv")
+    dsweoffonenldas.corr(method = "pearson").to_csv(OUTPUTDIR+"/dsweoffonenldascorr.csv")
+    dsweoffonee3sm.corr(method = "pearson").to_csv(OUTPUTDIR+"/dsweoffonee3smcorr.csv")
 
 
 ### Check p values
