@@ -7,8 +7,8 @@ from datetime import datetime, timedelta
 def is_odd(num):
     return num % 2 != 0
 
-def get_events(data, wthresh, sthresh, window):
-    
+def get_events(data, wthresh, sthresh, pthresh, window):
+
     # Straight average areal
     #dswe = data["dSWE"]; rof = data["ROF"]; precip = data["PRECIP"]
 
@@ -26,7 +26,7 @@ def get_events(data, wthresh, sthresh, window):
     Originally, this function used the datestring field to store event days, but I've changed it to datetime for
     easier computation.
     '''
-    
+
     rosevents = []
     datelist, preciplist, runofflist, dswelist = (np.array([]) for i in range(4))
     dtlist = np.array([], dtype = "datetime64")
@@ -34,7 +34,7 @@ def get_events(data, wthresh, sthresh, window):
     Initializes several ndarrays for use in computation below.
     '''
     tempdate = 0
-    
+
     ## Window logic to center smoothing.
     if (is_odd(window)):
         windowst = int(np.ceil(window/2))-1
@@ -42,7 +42,7 @@ def get_events(data, wthresh, sthresh, window):
     else:
         windowst = int(np.ceil(window/2))
         print("The window is: "+str(window)+" even")
-    windowen = int(np.ceil(window/2)) 
+    windowen = int(np.ceil(window/2))
     print("Window front/back: "+str(windowst)+" "+str(windowen))
 
     for tindex in range(len(dates)):
@@ -52,21 +52,21 @@ def get_events(data, wthresh, sthresh, window):
         #wprecip = precip.isel(time = slice(tindex, tindex+window)).mean()
         #wrof = rof.isel(time = slice(tindex, tindex+window)).mean()
         #wdswe = -1*dswe.isel(time = slice(tindex, tindex+window)).mean()
-        
+
         '''
         This looks at three fields separately: The amount of liquid-equivalent precipitation, the amount
         of surface runoff, and the DECREASE in SWE over the specified time period. The user can specify the number
         of days to be averaged. This is done in an attempt to capture the impacts of a multi-day event.
-        
+
         In this case, the code is taking an areal and time-averaged (over five days) mean of these different
         quantities. The use of a mean rather than a sum ensures that the criteria are the same between model+"/"+models of
         different spatial resolution.
         '''
-        
+
         ### Debugging print
         #print(str(tindex)+" "+str(dates[tindex].values)+" "+str(wrof.values)+"      "+str(rof[tindex].mean().values))
 
-        if wrof >= wthresh and wdswe >= sthresh: #Can add a wrof >= pthresh if desired
+        if wrof >= wthresh and wdswe >= sthresh and wprecip >= pthresh: #Can add a wprecip >= pthresh if desired
             '''
             This checks if a day has a runoff and snowmelt component that exceeds some user-defined criteria.
             This is done to filter out very small events which don't have significant impacts. A half-inch of
@@ -87,7 +87,7 @@ def get_events(data, wthresh, sthresh, window):
                 of days, which will be stored as an "event." This is done to keep particular multiday flooding events
                 together.
                 '''
-                
+
                 dtlist = np.append(dtlist, tdt)
                 preciplist = np.append(preciplist, wprecip)
                 runofflist = np.append(runofflist, wrof)
@@ -101,10 +101,10 @@ def get_events(data, wthresh, sthresh, window):
             This reassigns tempdate to the start date of the 5-day period, regardless of whether or not the period
             meets the criteria. This is done to check if days are consecutive.
             '''
-        elif wrof < wthresh or wdswe < sthresh:
+        elif wrof < wthresh or wdswe < sthresh:  # do not include a pthresh here because we can have a long lag of snowmelt/runoff after trigger event (slow-rise)
             # reset tempdate
             tempdate = 0
-            
+
             if len(dtlist) >=1:
                 event = {"Dates": np.copy(dtlist), "Precips": np.copy(preciplist), "Runoffs": np.copy(runofflist), "dSWEs": np.copy(dswelist)}
                 rosevents.append(event)
@@ -115,10 +115,10 @@ def get_events(data, wthresh, sthresh, window):
                 of dictionaries. It then resets the ndarrays for the next event.
                 '''
     return rosevents
-    
+
 def get_w_s_perc(data, window):
-    
-    ## This returns single long arrays 
+
+    ## This returns single long arrays
     # Straight weighting by areal avg.
     #dswe = data["dSWE"]; rof = data["ROF"]; precip = data["PRECIP"]
     # Weight area by latitude
@@ -127,26 +127,26 @@ def get_w_s_perc(data, window):
     rof = data["ROF"].weighted(weights).mean(dim = ["lat", "lon"], skipna=True)
     dswe = data["dSWE"].weighted(weights).mean(dim = ["lat", "lon"], skipna=True)
     precip = data["PRECIP"].weighted(weights).mean(dim = ["lat", "lon"], skipna=True)
-    
+
     dates = dswe["time"]
 
     pprecip = []
     prof = []
     pdswe = []
-    
+
     tempdate = 0
     for tindex in range(len(dswe["time"])):
         pprecip += [precip.isel(time = slice(tindex, tindex+window)).mean()]
         prof += [rof.isel(time = slice(tindex, tindex+window)).mean()]
         pdswe += [-1*dswe.isel(time = slice(tindex, tindex+window)).mean()]
-        
+
     return pprecip, prof, pdswe
-    
+
 def get_df(events):
     # This is an attempt to create a single comprehensive dataframe describing the statistics for all events
     # in a certain basin and time period. Each row of the dataframe is an event. The fields are fairly self-explanatory.
     # The "Magnitude" is a little more complicated, and combines the precipitation, runoff, and dSWE for each event. This
-    # is used in the bubble plots below, and can also be used to gauge how "severe" an event is. I'm still not sure if 
+    # is used in the bubble plots below, and can also be used to gauge how "severe" an event is. I'm still not sure if
     # precipitation should be included in the magnitude calculation, and that's something I'm working on.
     eventdf = pd.DataFrame({"Event": np.arange(0, len(events), 1),
                             "Event Dates": [event["Dates"] for event in events],
@@ -173,20 +173,20 @@ def get_wyear(year, sussdata):
     pltdates = sussdata["time"]
     wyear = pltdates.sel(time = slice(year+"-10-01", str(int(year)+1)+"-09-30"))
     return wyear
-    
+
 def get_winter(sussdata):
     pltdates = sussdata["time"]
     month_idxs=pltdates.groupby('time.month').groups
-    # Extract the time indices corresponding to all the Januarys 
-    jan_idxs=month_idxs[1]  
-    wyear=pltdates.isel(time=jan_idxs)       
+    # Extract the time indices corresponding to all the Januarys
+    jan_idxs=month_idxs[1]
+    wyear=pltdates.isel(time=jan_idxs)
     return wyear
-    
+
 def get_wyeardict(years, eventdf, sussdata):
     #This creates a dictionary with each water year serving as a key. In each water year is a list of events
-    #that occurred in that water year. EAch entry in the list contains the event statistics described above in the 
+    #that occurred in that water year. EAch entry in the list contains the event statistics described above in the
     #"get_df" function.
-    
+
     #This examines the first winter in the dataset. This first winter may have rain-on-snow events, but
     #would not be otherwise included in the list of water years.
     years.insert(0, str(int(years[0])-1))
@@ -200,25 +200,25 @@ def get_wyeardict(years, eventdf, sussdata):
                 wyearevents.append(eventdf.loc[event])
         wyeareventsdict[year] = wyearevents.copy()
     return wyeareventsdict
-    
+
 def get_wyeardates(years, wyeardict):
     #This returns all dates in each water year on which an event occurred. So, for example, if there were three
     #events in water year 1980, the first five days long, the second three days long ,and the third four days long,
     #wyeardates[1980] would have 12 entries.
-    
+
     wyeardates = {}
     for year in years:
         wyeardates[year] = [date for evdates in wyeardict[year] for date in evdates[1]]
     return wyeardates
-    
+
 def get_streamdata(years):
-    
+
     streamraw = pd.read_csv("./data/suss_streamflows2.csv")
     #In my case, this is a file I downloaded from https://waterdata.usgs.gov/nwis/dv?referred_module=sw
     #and uploaded to the jupyter server. Make sure that if you're doing this yourself for a different basin
     #or different set of years, you download a file at the location that you're interested in, select
     #the variable "streamflow," select the date range that corresponds to the years you're looking at.
-    
+
     streamraw = streamraw.rename(columns = {"119381_00060_00003": "Streamflow"})
 
     groupdays = streamraw.groupby("datetime").mean();
@@ -233,13 +233,13 @@ def get_streamdata(years):
     groupdaysw = groupdays3[[day.month <=4 or day.month >=11 for day in groupdays3.index]]
     groupdaysw = groupdaysw.rename_axis("datetime")
     groupdaysw = groupdaysw["Streamflow"]
-    
+
     return groupdaysw
-    
+
 def get_prank(sarray, svals):
-    
+
     prs = []
-    
+
     #This filters out all days with unrecorded streamflow when calculating streamflow percentiles for each event.
     #This is done to avoid misleading percentiles. For example, if any integer value is considered greater than
     #an nan, and there are 20 nans in a 40-element array, then even the lowest value will be considered 50th
@@ -248,9 +248,9 @@ def get_prank(sarray, svals):
 
     # Get percentiles for each day during the event
     prs = [((len(msarray[msarray<sval])+0.5*len(msarray[msarray == sval]))/len(msarray))*100 for sval in svals]
-    
+
     return prs
-    
+
 def get_evpcts(evdf, streamsuss, swindow):
 
     #This function returns a list of percentiles given a list of streamflow values. This is used to find the
@@ -278,18 +278,18 @@ def get_evpcts(evdf, streamsuss, swindow):
             evdf["Max Streamflow Percentile"].loc[event] = -99999.0;
         else:
             streamvals = streamsuss.reindex(streamdays);
-            #streamvals = streamsuss.loc[streamdays]; 
+            #streamvals = streamsuss.loc[streamdays];
             pcts = get_prank(streamsuss, streamvals);
             evdf["Streamflow Percentiles"].loc[event] = pcts;
             evdf["Max Streamflow Percentile"].loc[event] = np.max(pcts);
-        
+
         # Starting streamflow percentile is *always* valid!
         evdf["Starting Streamflow Percentile"].loc[event] = pcts[0];
 
     return evdf
-    
+
 def get_bubble_axes(xaxis, yaxis):
-    
+
     if xaxis == "dSWE" and yaxis == "PRECIP":
         xlim = (-65, 20); ylim = (0, 60)
     elif xaxis == "PRECIP" and yaxis == "dSWE":
@@ -303,7 +303,7 @@ def get_bubble_axes(xaxis, yaxis):
     elif xaxis == "dSWE" and yaxis == "ROF":
         xlim = (-65, 20); ylim = (0, 25)
     return (xlim, ylim)
-    
+
 def get_stream_percentiles(streamsuss):
     allstream_pcts = get_prank(streamsuss, streamsuss);
     streamsuss = streamsuss.to_frame()
@@ -317,12 +317,13 @@ def get_stream_percentiles(streamsuss):
     streamsussx = streamsuss.to_xarray()
     return streamsussx
 
-def thresh_based_on_perc(percFilter,sussdata,window): 
+def thresh_based_on_perc(percFilter,sussdata,window):
     ppr, prof, pswe = get_w_s_perc(sussdata,window)
     wt = np.nanpercentile(prof, percFilter)
     st = np.nanpercentile(pswe, percFilter)
-    return wt, st
-    
+    pt = np.nanpercentile(ppr, percFilter)
+    return wt, st, pt
+
 def change_offset(sussdata,offset):
     offset = int(offset)
     print("OFFSET: Changing offset by "+str(offset))
@@ -336,5 +337,5 @@ def change_offset(sussdata,offset):
         sussdata["PRECIP"].values[ndates-1:,:] = 0.
     else:
         print("other offsets not supported, check function!")
-        
+
     return sussdata

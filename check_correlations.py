@@ -27,7 +27,7 @@ e3sm = xr.open_dataset("./netcdf/E3SM_1985to2005_masked.nc")
 ## If output subdir doesn't exist, create it.
 if not os.path.exists(OUTPUTDIR):
     os.makedirs(OUTPUTDIR)
-    
+
 jrawgt = np.cos(np.deg2rad(jra["lat"]))
 jrawgt.name = "weights"
 jrapre = jra["PRECIP"].weighted(jrawgt).mean(dim = ["lat", "lon"], skipna=True)
@@ -69,7 +69,7 @@ if PRINT_ALL_MATRICES:
 	preoffnegonejra.corr(method = "pearson").to_csv(OUTPUTDIR+"/preoffnegonejracorr.csv")
 	preoffonel15.corr(method = "pearson").to_csv(OUTPUTDIR+"/preoffonel15corr.csv")
 	preoffonenldas.corr(method = "pearson").to_csv(OUTPUTDIR+"/preoffonenldascorr.csv")
-preoffonee3sm.corr(method = "pearson").to_csv(OUTPUTDIR+"/preoffonee3smcorr.csv")
+  preoffonee3sm.corr(method = "pearson").to_csv(OUTPUTDIR+"/preoffonee3smcorr.csv")
 
 
 rofoffzero = pd.DataFrame({"JRA": jrarof, "L15": l15rof, "NLDAS": nldasrof, "E3SM": e3smrof});
@@ -86,7 +86,7 @@ if PRINT_ALL_MATRICES:
 	rofoffnegonejra.corr(method = "pearson").to_csv(OUTPUTDIR+"/rofoffnegonejracorr.csv")
 	rofoffonel15.corr(method = "pearson").to_csv(OUTPUTDIR+"/rofoffonel15corr.csv")
 	rofoffonenldas.corr(method = "pearson").to_csv(OUTPUTDIR+"/rofoffonenldascorr.csv")
-rofoffonee3sm.corr(method = "pearson").to_csv(OUTPUTDIR+"/rofoffonee3smcorr.csv")
+  rofoffonee3sm.corr(method = "pearson").to_csv(OUTPUTDIR+"/rofoffonee3smcorr.csv")
 
 
 dsweoffzero = pd.DataFrame({"JRA": jradswe, "L15": l15dswe, "NLDAS": nldasdswe, "E3SM": e3smdswe});
@@ -103,7 +103,7 @@ if PRINT_ALL_MATRICES:
 	dsweoffnegonejra.corr(method = "pearson").to_csv(OUTPUTDIR+"/dsweoffnegonejracorr.csv")
 	dsweoffonel15.corr(method = "pearson").to_csv(OUTPUTDIR+"/dsweoffonel15corr.csv")
 	dsweoffonenldas.corr(method = "pearson").to_csv(OUTPUTDIR+"/dsweoffonenldascorr.csv")
-dsweoffonee3sm.corr(method = "pearson").to_csv(OUTPUTDIR+"/dsweoffonee3smcorr.csv")
+  dsweoffonee3sm.corr(method = "pearson").to_csv(OUTPUTDIR+"/dsweoffonee3smcorr.csv")
 
 
 ### Check p values

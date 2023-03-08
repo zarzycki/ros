@@ -32,7 +32,7 @@ if float(which_thresh) > 0.0:
     perclabel = str(int(float(which_thresh)))
 else:
     perclabel = "AB"
-    
+
 print(perclabel)
 
 raw_df = pd.read_csv(csv_file)
@@ -47,7 +47,7 @@ df = raw_df
 
 sub_df = df[df['Thresh'] == which_thresh]
 
-varlist = ['wt_rof','st_swe','Event Length', 'Average dSWE', 'Max dSWE', 'Average Runoff', 'Max Runoff', 'Average Precip', 'Max Precip']
+varlist = ['wt_rof','st_swe','pt_pre','Event Length', 'Average dSWE', 'Max dSWE', 'Average Runoff', 'Max Runoff', 'Average Precip', 'Max Precip']
 
 length_written=False
 thresh_written=False
@@ -57,7 +57,7 @@ columns = ["L15", "NLDAS","JRA","E3SM"]
 outdf = pd.DataFrame()
 
 for var in varlist:
-    
+
     x1 = sub_df.loc[df['Dataset'] == 'L15'][var].values.astype(float)
     x2 = sub_df.loc[df['Dataset'] == 'NLDAS'][var].values.astype(float)
     x3 = sub_df.loc[df['Dataset'] == 'JRA'][var].values.astype(float)
@@ -73,7 +73,7 @@ for var in varlist:
         length_written=True
         tmpdf = pd.DataFrame(data=[len(x1),len(x2),len(x3),len(x4)], index=columns, columns=['Num'])
         outdf = pd.concat([outdf,tmpdf],axis=1)
-    
+
     print(var)
     if var == 'wt_rof':
         print(x1[0])
@@ -85,10 +85,12 @@ for var in varlist:
         print(x2.mean())
         print(x3.mean())
         print(x4.mean())
-    
-    #Create tmpdf 
+
+    #Create tmpdf
     tmpdf = pd.DataFrame(data=[x1.mean(),x2.mean(),x3.mean(),x4.mean()], index=columns, columns=[var])
     outdf = pd.concat([outdf,tmpdf],axis=1)
+
+print(outdf)
 
 ## Write stats to CSV
 outdf.to_csv(outputdir+"/table_stats_"+perclabel+".csv")
@@ -124,7 +126,7 @@ for var in varlist:
     weights = np.ones_like(x3) / len(x3)
     plt.hist(x3, **kwargs, weights=weights, linewidth=1.7, color='orange', label="JRA" )
 
-    weights = np.ones_like(x4) / len(x4)   
+    weights = np.ones_like(x4) / len(x4)
     plt.hist(x4, **kwargs, weights=weights, linewidth=1.0, color='black', label="E3SM" )
 
     plt.legend(loc="upper right")
@@ -134,7 +136,7 @@ for var in varlist:
     plt.xlabel("mm/day")
 
     newstr=var.replace(" ", "_")
-    
+
     #plt.show()
     plt.savefig(histdir+"/"+newstr+"_"+perclabel+".pdf")
     plt.close()

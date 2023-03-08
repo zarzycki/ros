@@ -17,7 +17,7 @@ model = sys.argv[1]  #E3SM, JRA, L15, NLDAS
 percFilter=float(sys.argv[2])  # -1.  (95.)  ## Do we want to filter on a particular threshold?
 
 ## For now defaults
-wt = 1.4; st = 1.4; window = 5; swindow = 7   #wt = ROF threshold, st = SWE threshold
+wt = 1.4; st = 1.4; pt = 0.0; window = 5; swindow = 7   #wt = ROF threshold, st = SWE threshold
 yaxis = "PRECIP"
 xaxis = "dSWE"
 STYR=1985
@@ -45,6 +45,7 @@ weights = np.cos(np.deg2rad(sussdata["lat"]))
 weights.name = "weights"
 rofmean = sussdata["ROF"].weighted(weights).mean(dim = ["lat", "lon"], skipna=True)
 dswemean = sussdata["dSWE"].weighted(weights).mean(dim = ["lat", "lon"], skipna=True)
+swemean = sussdata["SWE"].weighted(weights).mean(dim = ["lat", "lon"], skipna=True)
 precipmean = sussdata["PRECIP"].weighted(weights).mean(dim = ["lat", "lon"], skipna=True)
 
 # Get timeseries of dates from dataset
@@ -52,11 +53,14 @@ pltdates = sussdata["time"]
 
 # If we want to pick a percentile instead of a fixed value, get wt + st percentiles consistent with window
 if percFilter > 0.0:
-    wt, st = thresh_based_on_perc(percFilter,sussdata,window);
-print('using rof/wt: ',wt,'   swe/st: ',st)
+    wttmp, sttmp, pttmp = thresh_based_on_perc(percFilter,sussdata,window);
+    # Only update wt and st for percentiles, keep pt as either 0 or fixed cutoff
+    wt = wttmp
+    st = sttmp
+print('using rof/wt: ',wt,'   swe/st: ',st,'   precip/pt: ',pt)
 
 # Get event list and put into pandas list
-events = get_events(sussdata, wt, st, window);
+events = get_events(sussdata, wt, st, pt, window);
 pdevents = []
 eventdf = get_df(events)
 for event in events:
@@ -82,11 +86,12 @@ eventdf['Dataset'] = model
 eventdf['Thresh'] = percFilter
 eventdf['wt_rof'] = wt
 eventdf['st_swe'] = st
+eventdf['pt_pre'] = pt
 
 ## If output subdir doesn't exist, create it.
 if not os.path.exists(outputdir):
     os.makedirs(outputdir)
-    
+
 ## Write events to CSV
 if percFilter > 0.0:
     perclabel = str(int(percFilter))
@@ -99,6 +104,9 @@ eventdf.to_csv(outputdir+"/Events_"+model+"_"+startyear+"to"+endyear+"_"+perclab
 #maxshadingyval=max([max(rofmean),max(precipmean)])
 minshadingyval=-60
 maxshadingyval=62
+
+sum_swe = np.empty(len(years))
+counter=0
 
 for year in years:
     print("Plotting year: "+year) if debug_verbose else None;
@@ -143,6 +151,34 @@ for year in years:
     '''
     plt.close()
 
+    thisYeardSWE=dswemean.sel(time = wyear)
+    sum_swe[counter] = np.sum(thisYeardSWE[thisYeardSWE>0].values)
+    counter = counter+1
+
+#print(sum_swe)
+np.savetxt(outputdir+"/"+model+"_yearly_total_SWE.csv", sum_swe, delimiter=",")
+
+for year in years:
+    print("Plotting SWE year: "+year) if debug_verbose else None;
+    year = int(year)
+    wyear = pltdates.sel(time = slice(str(year)+"-11-15", str(year+1)+"-04-30"))
+    fig, ax = plt.subplots(1, 1, figsize = (8, 4))
+    ax.set_ylim(0, 200)
+    ax.margins(x=0)
+    ax.xaxis.grid(True, color='gray', linestyle='--', linewidth=0.5, alpha = 0.8)
+
+    ax.plot(wyear, swemean.sel(time = wyear), color = "#CC79A7", label = "SWE", linewidth=1.75, alpha = 0.6)
+    for event in pdevents:
+        if (np.isin(event, wyear).all()):
+            print("Coloring event") if debug_verbose else None;
+            ax.fill_between(event, minshadingyval, maxshadingyval, color = "blue", alpha = 0.15)
+
+    ax.legend()
+    ax.set_title(model+"-Analyzed Rain-on_Snow Events")
+    fig.savefig(outputdir+"/"+model+"_"+str(year)+"_SWE.pdf")
+
+    plt.close()
+
 xaxis = xaxis.upper(); yaxis = yaxis.upper()
 checkbubblevars = np.array(["PRECIP", "ROF", "DSWE"])
 if yaxis == xaxis:
@@ -167,10 +203,10 @@ else:
     for year in years:
         print("Bubbling year: "+year+"") if debug_verbose else None;
         wyear = get_wyear(year, sussdata)
-        
+
         #This lets users put in in only the axis variables and have the size variable be selected automatically
         sizevar = (set({"PRECIP", "ROF", "dSWE"}) - set({xaxis, yaxis})).pop()
-        
+
         sizecoef=2.6
         totdswes = dswemean.sel(time = wyear); totrofs = rofmean.sel(time = wyear); totprecips = precipmean.sel(time = wyear)
         xvals = sussdata[xaxis].mean(dim = ("lat", "lon")).sel(time = wyear)
@@ -186,7 +222,7 @@ else:
         posxf = evxvals[evsignvals>0]; negxf = evxvals[evsignvals<0]
         posyf = evyvals[evsignvals>0]; negyf = evyvals[evsignvals<0]
         possizef = (evsivals[evsignvals>0]**sizecoef); negsizef = (evsivals[evsignvals<0])**sizecoef
-        
+
         fig, ax = plt.subplots(1,1)
         ax.set_axisbelow(True)
         ax.grid(True)
