@@ -16,8 +16,8 @@ python analysis.py E3SM 95
 
 ## create supercat
 cd output
-rm -v supercat.csv
-cat *csv > supercat.TMP
+rm -vf supercat.csv
+cat Events_*csv > supercat.TMP
 mv supercat.TMP supercat.csv
 cd ..
 
@@ -30,6 +30,8 @@ cd ..
 ## Do histograms
 python histograms.py '-1.0'
 python histograms.py '95.0'
+
+python annual_stats.py
 
 ## get climatological means
 ncl plot-climo.ncl 'var="SWE"'
