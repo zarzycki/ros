@@ -16,6 +16,7 @@ python analysis.py E3SM 95
 
 ## create supercat
 cd output
+rm -v supercat.csv
 cat *csv > supercat.TMP
 mv supercat.TMP supercat.csv
 cd ..
