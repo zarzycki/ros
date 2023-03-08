@@ -17,7 +17,8 @@ model = sys.argv[1]  #E3SM, JRA, L15, NLDAS
 percFilter=float(sys.argv[2])  # -1.  (95.)  ## Do we want to filter on a particular threshold?
 
 ## For now defaults
-wt = 1.4; st = 1.4; pt = 0.0; window = 5; swindow = 7   #wt = ROF threshold, st = SWE threshold
+wt = 1.4; st = 1.4; pt = 2.0  #wt = ROF threshold, st = SWE threshold, #pt = Precip rate threshold
+window = 5; swindow = 7       #window = netcdf data smoothing window, swindow = streamflow smoothing window
 yaxis = "PRECIP"
 xaxis = "dSWE"
 STYR=1985
@@ -240,3 +241,5 @@ else:
         fig.suptitle(model+" Water Year "+ str(year))
         fig.savefig(outputdir+"/"+model+"_"+str((year))+"_scatplot.pdf")
         plt.close()
+
+print("... DONE!")

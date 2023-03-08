@@ -221,7 +221,7 @@ def get_streamdata(years):
 
     streamraw = streamraw.rename(columns = {"119381_00060_00003": "Streamflow"})
 
-    groupdays = streamraw.groupby("datetime").mean();
+    groupdays = streamraw.groupby("datetime").mean(numeric_only=True);
     truedays = [np.datetime64(day) for day in groupdays.index]
     truedays2 = pd.date_range(years[0]+"-01-01",str(int(years[-1]) + 1)+"-12-31");
     #groupdays  = groupdays.reindex(labels = "datetime", index = truedays)
