@@ -46,12 +46,14 @@ def get_events(data, wthresh, sthresh, pthresh, window):
     print("Window front/back: "+str(windowst)+" "+str(windowen))
 
     for tindex in range(len(dates)):
+        # Smoothed values (this days running mean)
         wprecip = precip.isel(time = slice(tindex-windowst, tindex+windowen)).mean()
         wrof = rof.isel(time = slice(tindex-windowst, tindex+windowen)).mean()
         wdswe = -1*dswe.isel(time = slice(tindex-windowst, tindex+windowen)).mean()
-        #wprecip = precip.isel(time = slice(tindex, tindex+window)).mean()
-        #wrof = rof.isel(time = slice(tindex, tindex+window)).mean()
-        #wdswe = -1*dswe.isel(time = slice(tindex, tindex+window)).mean()
+        # Exact values (this days exact daily obs)
+        xprecip = precip.isel(time = tindex)
+        xrof = rof.isel(time = tindex)
+        xdswe = -1*dswe.isel(time = tindex)
 
         '''
         This looks at three fields separately: The amount of liquid-equivalent precipitation, the amount
@@ -89,9 +91,9 @@ def get_events(data, wthresh, sthresh, pthresh, window):
                 '''
 
                 dtlist = np.append(dtlist, tdt)
-                preciplist = np.append(preciplist, wprecip)
-                runofflist = np.append(runofflist, wrof)
-                dswelist = np.append(dswelist, wdswe)
+                preciplist = np.append(preciplist, xprecip)
+                runofflist = np.append(runofflist, xrof)
+                dswelist = np.append(dswelist, xdswe)
                 '''
                 This stores the start day, mean precipitation, mean runoff, and mean dSWE across the basin for the
                 5-day period.
