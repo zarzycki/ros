@@ -237,8 +237,8 @@ begin
   numFeatures   = geomDims(0)
 
 ;---Read shapefile lat/lon
-  lon = f->y
-  lat = f->x
+  lon = f->x
+  lat = f->y
 ;
 ; If shp_var_name is specified, then get the approximate lat/lon box that 
 ; encloses the shapefile areas of interest. This can make the 
