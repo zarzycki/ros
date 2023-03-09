@@ -1,18 +1,9 @@
 #!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import os
 import sys
-#plt.style.use('seaborn-white')
-
-
-# In[ ]:
 
 which_thresh=sys.argv[1]
 
@@ -37,8 +28,6 @@ print(perclabel)
 
 raw_df = pd.read_csv(csv_file)
 
-#raw_df.head
-
 ## If output subdir doesn't exist, create it.
 if not os.path.exists(histdir):
     os.makedirs(histdir)
@@ -48,6 +37,8 @@ df = raw_df
 sub_df = df[df['Thresh'] == which_thresh]
 
 varlist = ['wt_rof','st_swe','pt_pre','Event Length', 'Average dSWE', 'Max dSWE', 'Average Runoff', 'Max Runoff', 'Average Precip', 'Max Precip']
+# Labels that match varlist
+labellist = ['wt_rof','st_swe','pt_pre','Event Length', 'Average dSWE', 'Max dSWE', 'Average ROF', 'Max ROF', 'Average PRECIP', 'Max PRECIP']
 
 length_written=False
 thresh_written=False
@@ -95,12 +86,10 @@ print(outdf)
 ## Write stats to CSV
 outdf.to_csv(outputdir+"/table_stats_"+perclabel+".csv")
 
+##### Plotting
 
-# In[5]:
-
-
-plotvarlist = ['wt_rof','st_swe','Event Length', 'Average dSWE', 'Max dSWE', 'Average Runoff', 'Max Runoff', 'Average Precip', 'Max Precip']
-
+# Iteration integer for getting labellist
+ii=0
 for var in varlist:
 
     print(var)
@@ -112,6 +101,13 @@ for var in varlist:
     x2 = sub_df.loc[df['Dataset'] == 'NLDAS'][var].values.astype(float)
     x3 = sub_df.loc[df['Dataset'] == 'JRA'][var].values.astype(float)
     x4 = sub_df.loc[df['Dataset'] == 'E3SM'][var].values.astype(float)
+
+    # Clip small negative numbers to zero for plotting.
+    if var == 'Max dSWE' or var == 'Average dSWE':
+        x1[x1 < 0] = 0
+        x2[x2 < 0] = 0
+        x3[x3 < 0] = 0
+        x4[x4 < 0] = 0
 
     #kwargs = dict(histtype='stepfilled', alpha=0.3, density=True, bins=6, ec="k", linewidth=2.0)
 
@@ -131,7 +127,7 @@ for var in varlist:
 
     plt.legend(loc="upper right")
 
-    plt.suptitle(var)
+    plt.suptitle(labellist[ii])
     plt.ylabel("PDF (%)")
     plt.xlabel("mm/day")
 
@@ -141,8 +137,7 @@ for var in varlist:
     plt.savefig(histdir+"/"+newstr+"_"+perclabel+".pdf")
     plt.close()
 
-
-# In[6]:
+    ii=ii+1
 
 
 events=outdf['Num']
@@ -166,7 +161,3 @@ plt.xlabel("Data Product")
 newstr="events"
 plt.savefig(histdir+"/"+newstr+"_"+perclabel+".pdf")
 plt.close()
-
-
-
-
