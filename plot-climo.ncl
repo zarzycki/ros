@@ -13,11 +13,11 @@ shpfilename="./shapes/srb/srb.shp"
 shp = addfile(shpfilename,"r")
 
 ; settings
-var="ROF"
+;var="ROF"
 winter_only=True
 
 ;debugging
-check_L15=True
+check_L15=False
 check_NLDAS=False
 only_obs=False
 
@@ -85,17 +85,17 @@ if (check_L15) then
   delete(f4)
   delete(rof4)
   if (var .eq. "ROF") then
-    f4 = addfile("./netcdf1/q.mon.ltm.nc","r")
+    f4 = addfile("./netcdf/q.mon.ltm.nc","r")
     rof4 = f4->q(:,{shortlat},{shortlon})
     rof4 = rof4*86400.
     ; NOTE: CMZ tested surface + baseflow 3/23 and found this overshoots
     ; sfc runoff from other data, so don't think this is source of low L15 ROF
-    ;t4 = addfile("./netcdf1/qsb.mon.ltm.nc","r")
+    ;t4 = addfile("./netcdf/qsb.mon.ltm.nc","r")
     ;tof4 = t4->qsb(:,{shortlat},{shortlon})
     ;tof4 = tof4*86400.
     ;rof4 = rof4 + tof4
   else if (var .eq. "SWE") then
-    f4 = addfile("./netcdf1/swe.mon.ltm.nc","r")
+    f4 = addfile("./netcdf/swe.mon.ltm.nc","r")
     rof4 = f4->swe(:,{shortlat},{shortlon})
   else
     print("trying to check var that isn't supported")
@@ -270,6 +270,7 @@ res@mpMaxLatF=43.1
 res@mpMinLatF=39.3
 res@mpMinLonF=280.7
 res@mpMaxLonF=285.7
+res@mpCenterLonF=(res@mpMinLonF+res@mpMaxLonF)/2.
 
 res@mpDataBaseVersion = "MediumRes"
 res@mpOutlineBoundarySets = "USStates"
