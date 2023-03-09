@@ -132,8 +132,8 @@ for year in years:
         ax.plot(wyear, xr.where(streamsussx["P95"].sel(datetime = wyear), 55., -9999.), color = "royalblue", marker=markstyle, ms=marksize, linestyle = 'None', label='_nolegend_')
         ax.plot(wyear, xr.where(streamsussx["P99"].sel(datetime = wyear), 55., -9999.), color = "midnightblue", marker=markstyle, ms=marksize, linestyle = 'None', label='_nolegend_')
 
-    ax.plot(wyear, precipmean.sel(time = wyear), color = "#009E73", label = "Precip", linewidth=2.5, alpha = 1.0)
-    ax.plot(wyear, 3.0*rofmean.sel(time = wyear), color = "#E69F00", label = "Runoff", linewidth=2.0, alpha = 0.8)
+    ax.plot(wyear, precipmean.sel(time = wyear), color = "#009E73", label = "PRECIP", linewidth=2.5, alpha = 1.0)
+    ax.plot(wyear, 3.0*rofmean.sel(time = wyear), color = "#E69F00", label = "ROF", linewidth=2.0, alpha = 0.8)
     ax.plot(wyear, dswemean.sel(time = wyear), color = "#CC79A7", label = "dSWE", linewidth=1.75, alpha = 0.6)
     for event in pdevents:
         if (np.isin(event, wyear).all()):
@@ -143,7 +143,7 @@ for year in years:
     Highlights the flagged ROS events with a red rectangle
     '''
     ax.legend()
-    ax.set_title(model+"-Analyzed Rain-on_Snow Events")
+    ax.set_title(model+" RoS Events")
     fig.savefig(outputdir+"/"+model+"_"+str(year)+"_events.pdf")
     '''
     This creates a time series plot of dSWE, runoff, and precipitation for each water year in the dataset, along
@@ -175,7 +175,7 @@ for year in years:
             ax.fill_between(event, minshadingyval, maxshadingyval, color = "blue", alpha = 0.15)
 
     ax.legend()
-    ax.set_title(model+"-Analyzed Rain-on_Snow Events")
+    ax.set_title(model+" SWE evolution")
     fig.savefig(outputdir+"/"+model+"_"+str(year)+"_SWE.pdf")
 
     plt.close()
