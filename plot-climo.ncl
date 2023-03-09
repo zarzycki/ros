@@ -13,17 +13,24 @@ shpfilename="./shapes/srb/srb.shp"
 shp = addfile(shpfilename,"r")
 
 ; settings
-;var="SWE"
+var="ROF"
 winter_only=True
 
 ;debugging
-check_L15=False
+check_L15=True
 check_NLDAS=False
+only_obs=False
 
 rof1 = f1->$var$
 rof2 = f2->$var$
-rof3 = f3->$var$
-rof4 = f4->$var$
+if (only_obs) then
+  rof3 = rof1
+  rof3 = 0.0
+  rof4 = rof3
+else
+  rof3 = f3->$var$
+  rof4 = f4->$var$
+end if
 
 rof1_time = cd_calendar(f1->time,0)
 rof1_month = rof1_time(:,1)
@@ -41,6 +48,14 @@ rof4_time = cd_calendar(f1->time,0)
 rof4_month = rof4_time(:,1)
 rof4_2D = conform_dims(dimsizes(rof4),rof4_month,0)
 
+if ((check_L15 .or. check_NLDAS) .and. winter_only) then
+  print("Cannot have a check on and only winter, resetting winter_only to False")
+  winter_only = False
+end if
+if (check_L15 .and. check_NLDAS) then
+  print("both check L15 and check NLDAS cannot be on")
+  exit
+end if
 if (winter_only) then
   rof1 = where(rof1_2D.lt.11 .and. rof1_2D.gt.4,rof1@_FillValue,rof1)
   rof2 = where(rof2_2D.lt.11 .and. rof2_2D.gt.4,rof2@_FillValue,rof2)
@@ -63,38 +78,82 @@ if (var .eq. "dSWE") then
 end if
 
 if (check_L15) then
-  delete(f3)
-  delete(rof3)
-  f3 = addfile("./netcdf/q.mon.ltm.nc","r")
-  rof3 = f3->q
-  rof3 = rof3*86400.
+  shortlat := tofloat(rof1&lat)
+  shortlon := tofloat(rof1&lon)
+  shortlon := shortlon + 360.
+
+  delete(f4)
+  delete(rof4)
+  if (var .eq. "ROF") then
+    f4 = addfile("./netcdf1/q.mon.ltm.nc","r")
+    rof4 = f4->q(:,{shortlat},{shortlon})
+    rof4 = rof4*86400.
+    ; NOTE: CMZ tested surface + baseflow 3/23 and found this overshoots
+    ; sfc runoff from other data, so don't think this is source of low L15 ROF
+    ;t4 = addfile("./netcdf1/qsb.mon.ltm.nc","r")
+    ;tof4 = t4->qsb(:,{shortlat},{shortlon})
+    ;tof4 = tof4*86400.
+    ;rof4 = rof4 + tof4
+  else if (var .eq. "SWE") then
+    f4 = addfile("./netcdf1/swe.mon.ltm.nc","r")
+    rof4 = f4->swe(:,{shortlat},{shortlon})
+  else
+    print("trying to check var that isn't supported")
+    exit
+  end if
+  end if
+
+  models(3) = "L15 LTM"
 end if
 
 if (check_NLDAS) then
+  shortlat := rof2&lat
+  shortlon := rof2&lon
+
   delete(f1)
   delete(rof1)
-  filelist = systemfunc("ls ./NLDAS2-Verif/NLDAS_VIC0125_MC*.nc")
+  filelist = systemfunc("ls /Users/cmz5202/Software/ros/ALL_PY/NLDAS2-Verif/NLDAS_VIC0125_MC*.nc")
   print(filelist)
   f1 = addfiles(filelist,"r")
-  ListSetType (f1, "join") 
-  rof1 = f1[:]->SSRUN_110_SFC_S51
-  rof1 = rof1 / 30.
+  ListSetType (f1, "join")
+  if (var .eq. "ROF") then
+    rof1 = f1[:]->SSRUN_110_SFC_S51(:,{shortlat},{shortlon})
+    rof1 = rof1 / 30.
+  else if (var .eq. "SWE") then
+    rof1 = f1[:]->WEASD_110_SFC_S51(:,{shortlat},{shortlon})
+  else
+    print("trying to check var that isn't supported")
+    exit
+  end if
+  end if
+
   rof1!1="lat"
   rof1!2="lon"
-  rof1&lat=f1[0]->lat_110
-  rof1&lon=f1[0]->lon_110
+  rof1&lat=f1[0]->lat_110({shortlat})
+  rof1&lon=f1[0]->lon_110({shortlon})
   printVarSummary(rof1)
-  
+
   delete(f3)
   delete(rof3)
-  f3 = addfile("./NLDAS2-Verif/SSRUN_GDS0_SFC_acc1h_VIC_avg.nc","r")
-  rof3 = f3->SSRUN_GDS0_SFC_acc1h
-  rof3 = rof3 * 24.
+  if (var .eq. "ROF") then
+    f3 = addfile("/Users/cmz5202/Software/ros/ALL_PY/NLDAS2-Verif/SSRUN_GDS0_SFC_acc1h_VIC_avg.nc","r")
+    rof3 = f3->SSRUN_GDS0_SFC_acc1h(:,{shortlat},{shortlon})
+    rof3 = rof3 * 24.
+  else if (var .eq. "SWE") then
+    f3 = addfile("/Users/cmz5202/Software/ros/ALL_PY/NLDAS2-Verif/WEASD_GDS0_SFC_VIC_avg.nc","r")
+    rof3 = f3->WEASD_GDS0_SFC(:,{shortlat},{shortlon})
+  else
+    print("trying to check var that isn't supported")
+    exit
+  end if
+  end if
   rof3!1="lat"
   rof3!2="lon"
-  rof3&lat=f3->g0_lat_0
-  rof3&lon=f3->g0_lon_1
-  printVarSummary(rof3)
+  rof3&lat=f3->g0_lat_0({shortlat})
+  rof3&lon=f3->g0_lon_1({shortlon})
+
+  models(0) = "NLDAS2"
+  models(2) = "NLDAS4.0.5_avg"
 end if
 
 rof1&lat@units="degrees_north"
@@ -121,6 +180,14 @@ rof1_avg = dim_avg_n_Wrap(rof1,0)
 rof2_avg = dim_avg_n_Wrap(rof2,0)
 rof3_avg = dim_avg_n_Wrap(rof3,0)
 rof4_avg = dim_avg_n_Wrap(rof4,0)
+
+if (check_NLDAS) then
+  rof1_avg = where(ismissing(rof2_avg),rof1_avg@_FillValue,rof1_avg)
+  rof3_avg = where(ismissing(rof2_avg),rof3_avg@_FillValue,rof3_avg)
+end if
+if (check_L15) then
+  rof4_avg = where(ismissing(rof1_avg),rof4_avg@_FillValue,rof4_avg)
+end if
 
 rad    = 4.0*atan(1.0)/180.0
 rof1_avg_avg = wgt_areaave_Wrap(rof1_avg, cos(rof1_avg&lat*rad), 1.0, 1)
@@ -151,23 +218,39 @@ res@cnLinesOn = False
 res@cnLineLabelsOn  = False
 
 if (var .eq. "ROF")
-  res@cnLevelSelectionMode =  "ManualLevels"   
+  res@cnLevelSelectionMode =  "ManualLevels"
   res@cnMinLevelValF       = 0.05
   res@cnMaxLevelValF       = 0.8
   res@cnLevelSpacingF      = 0.05
   cmap                     := read_colormap_file("MPL_BuGn")
-  res@cnFillPalette        := cmap   
+  res@cnFillPalette        := cmap
+end if
+if (var .eq. "BASE")
+  res@cnLevelSelectionMode =  "ManualLevels"
+  res@cnMinLevelValF       = 0.05
+  res@cnMaxLevelValF       = 1.55
+  res@cnLevelSpacingF      = 0.10
+  cmap                     := read_colormap_file("MPL_BuGn")
+  res@cnFillPalette        := cmap
+end if
+if (var .eq. "ET")
+  res@cnLevelSelectionMode =  "ManualLevels"
+  res@cnMinLevelValF       = 0.2
+  res@cnMaxLevelValF       = 2.4
+  res@cnLevelSpacingF      = 0.2
+  cmap                     := read_colormap_file("MPL_BuGn")
+  res@cnFillPalette        := cmap
 end if
 if (var .eq. "PRECIP")
-  res@cnLevelSelectionMode =  "ManualLevels"   
+  res@cnLevelSelectionMode =  "ManualLevels"
   res@cnMinLevelValF       = 2.1
   res@cnMaxLevelValF       = 3.8
   res@cnLevelSpacingF      = 0.1
   cmap                     := read_colormap_file("cmocean_matter")
-  res@cnFillPalette        := cmap  
+  res@cnFillPalette        := cmap
 end if
 if (var .eq. "SWE")
-  res@cnLevelSelectionMode =  "ManualLevels"   
+  res@cnLevelSelectionMode =  "ManualLevels"
   res@cnMinLevelValF       = 0.
   res@cnMaxLevelValF       = 40.0
   res@cnLevelSpacingF      = 1.
@@ -175,14 +258,14 @@ if (var .eq. "SWE")
   res@cnFillPalette        := cmap
 end if
 if (var .eq. "dSWE")
-  res@cnLevelSelectionMode =  "ManualLevels"   
+  res@cnLevelSelectionMode =  "ManualLevels"
   res@cnMinLevelValF       =  -4.0
   res@cnMaxLevelValF       =  -1.2
   res@cnLevelSpacingF      =  0.1
   cmap                     := read_colormap_file("MPL_YlGnBu")
   res@cnFillPalette        := cmap(::-1,:)
 end if
-  
+
 res@mpMaxLatF=43.1
 res@mpMinLatF=39.3
 res@mpMinLonF=280.7
@@ -190,7 +273,7 @@ res@mpMaxLonF=285.7
 
 res@mpDataBaseVersion = "MediumRes"
 res@mpOutlineBoundarySets = "USStates"
-res@mpOutlineDrawOrder = "PostDraw" 
+res@mpOutlineDrawOrder = "PostDraw"
 
 res@gsnMajorLatSpacing = 1.0
 res@gsnMajorLonSpacing = 2.0
@@ -221,13 +304,13 @@ plot(0) = gsn_csm_contour_map(wks,rof1_avg,res)
 
 res@tmYLLabelsOn  = False
 res@gsnCenterString = models(1)
-plot(1) = gsn_csm_contour_map(wks,rof2_avg,res) 
+plot(1) = gsn_csm_contour_map(wks,rof2_avg,res)
 
 res@gsnCenterString = models(2)
-plot(2) = gsn_csm_contour_map(wks,rof3_avg,res) 
+plot(2) = gsn_csm_contour_map(wks,rof3_avg,res)
 
 res@gsnCenterString = models(3)
-plot(3) = gsn_csm_contour_map(wks,rof4_avg,res) 
+plot(3) = gsn_csm_contour_map(wks,rof4_avg,res)
 
 plres = True
 plres@gsLineColor = "black"
