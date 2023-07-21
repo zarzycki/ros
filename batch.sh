@@ -1,6 +1,6 @@
 #!/bin/bash -l
 
-conda activate ros-metrics
+conda activate ros-metrics2
 
 set -e
 
@@ -54,3 +54,5 @@ ncl plot-climo.ncl 'var="SWE"'
 ncl plot-climo.ncl 'var="dSWE"'
 ncl plot-climo.ncl 'var="ROF"'
 ncl plot-climo.ncl 'var="PRECIP"'
+
+python compare-1996-event.py

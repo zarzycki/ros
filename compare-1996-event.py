@@ -11,7 +11,7 @@ lat_station=40.2171
 
 ### Load obs data
 obs = pd.read_csv('./netcdf/1996-event/obs/CXY.csv')
-obstime = pd.to_datetime(obs['valid'])
+obstime = pd.to_datetime(obs['valid'],format='%m/%d/%y %H:%M')
 obsT = ((obs['tmpf'] - 32.) * 5/9) + 273.15
 
 ### L15-VIC data (3-hourly ASCII)
@@ -21,8 +21,8 @@ data = df2.to_numpy()
 
 # Generate a datetime array
 masterdatetime=[]
-for index, value in np.ndenumerate(data[:,0]):
-    thisdate = datetime.datetime(int(data[index,0]), int(data[index,1]), int(data[index,2]), int(data[index,3]))
+for index, _ in np.ndenumerate(data[:,0]):
+    thisdate = datetime.datetime(int(data[index[0],0]), int(data[index[0],1]), int(data[index[0],2]), int(data[index[0],3]))
     masterdatetime.append(thisdate)
 
 # Find start and end indices
@@ -134,7 +134,7 @@ left = datetime.date(1996, 1, 17)
 right = datetime.date(1996, 1, 21)
 plt.gca().set_xbound(left, right)
 
-plt.savefig("timeseries_T_1996event.pdf", format="pdf", bbox_inches="tight")
+plt.savefig("./output/timeseries_T_1996event.pdf", format="pdf", bbox_inches="tight")
 
 
 
@@ -207,13 +207,14 @@ for ax in axs.flat:
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %H''Z'))
 
 for ax in axs.flat:
-    ax.set(xlabel='Date (UTC)', ylabel='Precip. rate (mm/hr)')
+    ax.set_xlabel('Date (UTC)')
+    ax.set_ylabel('Precip. rate (mm/hr)', color=rain_color)
 
 for ax in axs.flat:
     ax.label_outer()
 
-ax01.set_ylabel('Sfc. temp. (K)')
-ax11.set_ylabel('Sfc. temp. (K)')
+ax01.set_ylabel('Sfc. temp. (K)',color=temp_color)
+ax11.set_ylabel('Sfc. temp. (K)',color=temp_color)
 
-plt.savefig("precip_vs_t_1996.pdf", format="pdf", bbox_inches="tight")
+plt.savefig("./output/precip_vs_t_1996.pdf", format="pdf", bbox_inches="tight")
 
