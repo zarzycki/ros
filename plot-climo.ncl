@@ -126,8 +126,6 @@ if (check_NLDAS) then
     exit
   end if
   end if
-
-  rof1!1="lat"
   rof1!2="lon"
   rof1&lat=f1[0]->lat_110({shortlat})
   rof1&lon=f1[0]->lon_110({shortlon})
