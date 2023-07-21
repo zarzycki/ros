@@ -364,6 +364,7 @@ else if (var .eq. "SWE") then
 else if (var .eq. "dSWE") then
   resP@gsnPanelFigureStrings= (/"m.","n.","o.","p."/)
 else
+  resP@gsnPanelFigureStrings= (/"1.","2.","3.","4."/)
 end if
 end if
 end if
