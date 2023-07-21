@@ -2,11 +2,12 @@ name: ros-metrics
 channels:
   - conda-forge
 dependencies:
-  - python
-  - numpy
-  - pandas
-  - scipy
-  - xarray
-  - matplotlib
+  - python==3.11.4
+  - numpy==1.25.1
+  - pandas==2.0.3
+  - scipy==1.11.1
+  - xarray==2023.7.0
+  - matplotlib==3.7.2
   - jpeg==9e
-  - netcdf4
+  - netcdf4==1.6.4
+  # - ncl
