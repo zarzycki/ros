@@ -34,7 +34,12 @@ def get_suss(meteo, fluxes, susslats, susslons):
     precipsuss = meteo["Prec"].sel(lat = susslats, lon = susslons).values
     swesuss = fluxes["SWE"].sel(lat = susslats, lon = susslons).values
     rofsuss = fluxes["Runoff"].sel(lat= susslats, lon = susslons).values
-    sussdata = xr.Dataset({"PRECIP": (("time", "lat", "lon"), precipsuss), "SWE": (("time", "lat", "lon"), swesuss), "ROF": (("time", "lat", "lon"), rofsuss)},
+    bassuss = fluxes["Baseflow"].sel(lat= susslats, lon = susslons).values
+    etsuss = fluxes["TotalET"].sel(lat= susslats, lon = susslons).values
+
+    sussdata = xr.Dataset({"PRECIP": (("time", "lat", "lon"), precipsuss), "SWE": (("time", "lat", "lon"), swesuss), "ROF": (("time", "lat", "lon"), rofsuss),
+                          "ET": (("time", "lat", "lon"), etsuss), "BASE": (("time", "lat", "lon"), bassuss)
+                          },
                           {"time": ("time", times), "lat": susslats, "lon": susslons})
     return sussdata
 
@@ -64,7 +69,7 @@ def get_dswe(data):
     return combdata
 
 '''
-This function adds dSWE to the dataset of precip, runoff, and SWE. Note that this merged dataset drops the first 
+This function adds dSWE to the dataset of precip, runoff, and SWE. Note that this merged dataset drops the first
 day of precip, runoff, and SWE data.
 '''
 
@@ -87,9 +92,9 @@ yeardata = get_dswe(yeardata);
 
 '''
 Because L15 data is monthly, the get_suss function is run every month to combine the precip, runoff, and SWE into
-a single dataset containing data from all days in the user-specified time period. Note that the get_dswe function is 
-not called until all months and years of data have been marged. This is because the get_dSWE function eliminates the 
-first day of the dataset in its argument. Having the function run on the full merged dataset rather than individual 
+a single dataset containing data from all days in the user-specified time period. Note that the get_dswe function is
+not called until all months and years of data have been marged. This is because the get_dSWE function eliminates the
+first day of the dataset in its argument. Having the function run on the full merged dataset rather than individual
 months prevents the first day of each month from being dropped.
 '''
 

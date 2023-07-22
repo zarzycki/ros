@@ -38,12 +38,20 @@ def get_suss(vic, forcing, latrange, lonrange):
     precip = 24*forcing["A_PCP_110_SFC_acc1h"].sel(lat_110 = susslats, lon_110 = susslons)
     precip = precip.sel(lat_110 = susslats, lon_110 = susslons).values
     runoff = 24*vic["SSRUN_GDS0_SFC_acc1h"].sel(g0_lat_0 = np.round(susslats, 3), g0_lon_1 = susslons).values
+    base = 24*vic["BGRUN_GDS0_SFC_acc1h"].sel(g0_lat_0 = np.round(susslats, 3), g0_lon_1 = susslons).values
     '''
     The multiplication by 24 is because the values given by the dataset are 1-hour means.
     '''
     swe = vic["WEASD_GDS0_SFC"].sel(g0_lat_0 = np.round(susslats, 3), g0_lon_1 = susslons).values
+
+    trans = vic["WEASD_GDS0_SFC"].sel(g0_lat_0 = np.round(susslats, 3), g0_lon_1 = susslons).values
+    et = 24*vic["EVP_GDS0_SFC_acc1h"].sel(g0_lat_0 = np.round(susslats, 3), g0_lon_1 = susslons).values
+    et = et + trans
+
     times = forcing["time"].values
-    sussdata = xr.Dataset({"PRECIP": (("time", "lat", "lon"), precip), "SWE": (("time", "lat", "lon"), swe), "ROF": (("time", "lat", "lon"), runoff)},
+    sussdata = xr.Dataset({"PRECIP": (("time", "lat", "lon"), precip), "SWE": (("time", "lat", "lon"), swe), "ROF": (("time", "lat", "lon"), runoff),
+                          "BASE": (("time", "lat", "lon"), base), "ET": (("time", "lat", "lon"), et)
+                          },
                          {"time": ("time", times), "lat": susslats, "lon": susslons})
     return sussdata
 '''
