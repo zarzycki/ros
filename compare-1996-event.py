@@ -4,6 +4,8 @@ import matplotlib.dates as mdates
 import datetime
 import numpy as np
 import xarray as xr
+import metpy.calc as mpcalc
+import matplotlib.ticker as ticker
 
 # Location of station?
 lon_station=-76.8515
@@ -35,6 +37,8 @@ enix = enix[0][0]
 L15time = masterdatetime[stix:enix]
 L15T = data[stix:enix,5]
 L15PREC = data[stix:enix,4]
+L15RH = data[stix:enix,7]
+L15RH = np.where(L15RH > 100, 100, L15RH)
 L15SNOW = np.where(L15T > 273.15, 0, L15PREC)
 L15RAIN = np.where(L15T <= 273.15, 0, L15PREC)
 L15SNOW = L15SNOW * 3600
@@ -49,6 +53,7 @@ for i in range(len(L15time)):
 da = xr.open_dataset('./netcdf/1996-event/JRA/JRA.h1.1996.T2M.nc')
 db = xr.open_dataset('./netcdf/1996-event/JRA/JRA.h1.1996.PRECT.nc')
 dc = xr.open_dataset('./netcdf/1996-event/JRA/JRA.h1.1996.PRECSN.nc')
+dd = xr.open_dataset('./netcdf/1996-event/JRA/JRA.h1.1996.RHREFHT.nc')
 
 da2 = da.sel(lat=lat_station,lon=(360.0 + lon_station),method='nearest')
 da2 = da2.sel(time=slice("1996-01-01", "1996-01-30"))
@@ -56,10 +61,14 @@ db2 = db.sel(lat=lat_station,lon=(360.0 + lon_station),method='nearest')
 db2 = db2.sel(time=slice("1996-01-01", "1996-01-30"))
 dc2 = dc.sel(lat=lat_station,lon=(360.0 + lon_station),method='nearest')
 dc2 = dc2.sel(time=slice("1996-01-01", "1996-01-30"))
+dd2 = dd.sel(lat=lat_station,lon=(360.0 + lon_station),method='nearest')
+dd2 = dd2.sel(time=slice("1996-01-01", "1996-01-30"))
 
 # Using 2M predictor
 jraT = da2.T2M
 jraPRECT = db2.PRECT
+jraRHREFHT = dd2.RHREFHT
+jraRHREFHT = np.where(jraRHREFHT > 100, 100, jraRHREFHT)
 jraSNOW = np.where(jraT > 273.15, 0, jraPRECT)
 jraRAIN = np.where(jraT <= 273.15, 0, jraPRECT)
 
@@ -77,12 +86,14 @@ jraSNOW = jraSNOW * 1000 * 3600
 
 ### E3SM
 
-ea = xr.open_dataset('./netcdf/1996-event/E3SM/E3SM-catted-native.nc_regrid.nc')
+ea = xr.open_dataset('./netcdf/1996-event/E3SM/E3SM-catted-native.nc_regrid.v2.nc')
 ea2 = ea.sel(lat=lat_station,lon=lon_station,method='nearest')
 ea2 = ea2.sel(time=slice("1996-01-01", "1996-01-30"))
 ea2 = ea2.convert_calendar("standard")
 
 e3smT = ea2.TREFHT
+e3smRH = ea2.RHREFHT
+e3smRH = np.where(e3smRH > 100, 100, e3smRH)
 e3smPRECT = ea2.PRECT
 e3smSNOW = np.where(e3smT > 273.15, 0, e3smPRECT)
 e3smRAIN = np.where(e3smT <= 273.15, 0, e3smPRECT)
@@ -94,12 +105,14 @@ e3smSNOW = e3smSNOW * 1000 * 3600
 
 
 ### NLDAS data
-fa = xr.open_dataset('./netcdf/1996-event/NLDAS/NLDAS-VIC4.0.5.nc')
-fa2 = fa.sel(lat_110=lat_station,lon_110=lon_station,method='nearest')
+fa = xr.open_dataset('./netcdf/1996-event/NLDAS/NLDAS-VIC4.0.5.v2.nc')
+fa2 = fa.sel(lat=lat_station,lon=lon_station,method='nearest')
 fa2 = fa2.sel(time=slice("1996-01-01", "1996-01-30"))
 
-NLDAST = fa2.TMP_110_HTGL
-NLDASPRECT = fa2.NARR_A_PCP_110_SFC_acc1h
+NLDAST = fa2.Tair
+NLDASPRECT = fa2.Rainf
+NLDASQ = fa2.Qair
+NLDASP = fa2.PSurf
 NLDASSNOW = np.where(NLDAST > 273.15, 0, NLDASPRECT)
 NLDASRAIN = np.where(NLDAST <= 273.15, 0, NLDASPRECT)
 NLDAStime = fa2.time
@@ -108,6 +121,12 @@ NLDAStime = fa2.time
 NLDASRAIN = NLDASRAIN
 NLDASSNOW = NLDASSNOW
 
+# Convert specific humidity to relative humidity using the formula
+#NLDASRH = specific_humidity_to_relative_humidity(NLDASQ, NLDASP, NLDAST)
+
+NLDASRH = mpcalc.relative_humidity_from_specific_humidity(NLDASP,NLDAST,NLDASQ)
+NLDASRH = NLDASRH * 100.
+NLDASRH = np.where(NLDASRH > 100, 100, NLDASRH)
 
 # Create simple timeseries plot
 
@@ -149,12 +168,26 @@ refer_width = 0.042
 snow_color='skyblue'
 rain_color='green'
 temp_color='red'
+rh_color='slateblue'
+obs_line_color='goldenrod'
+
 ref_line_color='k'
 bot_t_range=250
 top_t_range=290
-obs_line_color='b'
-obs_line_width=0.75
+
+obs_line_width=1.0
 freezing_temp=273.15
+
+rain_tick_length = 4
+
+rh_tick_spacing = 25.  # Set the desired tick spacing
+rh_tick_length = 3  # Set the desired tick length in points
+t_tick_spacing = 10.
+t_tick_length = 6
+
+rh_max_axis = 100
+rh_line_width=0.9
+rh_linestyle='--'
 
 axs[0, 0].bar(L15time, L15SNOW, refer_width*3, label='L15_SNOW', color=snow_color) # plotting t, a separately
 axs[0, 0].bar(L15time, L15RAIN, refer_width*3, label='L15_RAIN', color=rain_color) # plotting t, b separately
@@ -165,6 +198,19 @@ ax00.plot(obstime, obsT, obs_line_color, linewidth=obs_line_width)
 ax00.axhline(y=freezing_temp, color=ref_line_color)
 ax00.set(ylim=(bot_t_range,top_t_range))
 ax00.label_outer()
+ax00.tick_params(axis='y', colors=temp_color, length=t_tick_length)  # For y-axis ticks
+
+ax00_2 = axs[0, 0].twinx()
+ax00_2.plot(L15time, L15RH, color=rh_color, linestyle=rh_linestyle, linewidth=rh_line_width, label='L15_RH')
+ax00_2.set(ylim=(0, rh_max_axis))
+ax00_2.label_outer()
+ax00_2.tick_params(axis='y', colors=rh_color, length=rh_tick_length)  # For y-axis ticks
+ax00_2.set_yticks(np.arange(0, 101, 20))
+
+
+
+
+
 
 axs[1, 0].bar(jratime, jraSNOW, refer_width*6, label='JRA_SNOW', color=snow_color) # plotting t, a separately
 axs[1, 0].bar(jratime, jraRAIN, refer_width*6, label='JRA_RAIN', color=rain_color) # plotting t, b separately
@@ -175,6 +221,18 @@ ax10.plot(obstime, obsT, obs_line_color, linewidth=obs_line_width)
 ax10.axhline(y=freezing_temp, color=ref_line_color)
 ax10.set(ylim=(bot_t_range,top_t_range))
 ax10.label_outer()
+ax10.tick_params(axis='y', colors=temp_color, length=t_tick_length)  # For y-axis ticks
+
+ax10_2 = axs[1, 0].twinx()
+ax10_2.plot(jratime, jraRHREFHT, color=rh_color, linestyle=rh_linestyle, linewidth=rh_line_width, label='JRA_RH')
+ax10_2.set(ylim=(0, rh_max_axis))
+ax10_2.label_outer()
+ax10_2.tick_params(axis='y', colors=rh_color, length=rh_tick_length)  # For y-axis ticks
+ax10_2.set_yticks(np.arange(0, 101, 20))
+
+
+
+
 
 axs[0, 1].bar(NLDAStime, NLDASSNOW, refer_width*1, label='NLDAS_SNOW', color=snow_color) # plotting t, a separately
 axs[0, 1].bar(NLDAStime, NLDASRAIN, refer_width*1, label='NLDAS_RAIN', color=rain_color) # plotting t, b separately
@@ -185,6 +243,19 @@ ax01.plot(obstime, obsT, obs_line_color, linewidth=obs_line_width)
 ax01.axhline(y=freezing_temp, color=ref_line_color)
 ax01.set(ylim=(bot_t_range,top_t_range))
 ax01.label_outer()
+ax01.tick_params(axis='y', colors=temp_color, length=t_tick_length)  # For y-axis ticks
+
+ax01_2 = axs[0, 1].twinx()
+ax01_2.plot(NLDAStime, NLDASRH, color=rh_color, linestyle=rh_linestyle, linewidth=rh_line_width, label='NLDAS_RH')
+ax01_2.set(ylim=(0, rh_max_axis))
+ax01_2.label_outer()
+ax01_2.tick_params(axis='y', colors=rh_color, length=rh_tick_length)  # For y-axis ticks
+ax01_2.set_yticks(np.arange(0, 101, 20))
+
+
+
+
+
 
 axs[1, 1].bar(e3smtime, e3smSNOW, (refer_width*3.), label='E3SM_SNOW', color=snow_color) # plotting t, a separately
 axs[1, 1].bar(e3smtime, e3smRAIN, (refer_width*3.), label='E3SM_RAIN', color=rain_color) # plotting t, b separately
@@ -195,6 +266,20 @@ ax11.plot(obstime, obsT, obs_line_color, linewidth=obs_line_width)
 ax11.axhline(y=freezing_temp, color=ref_line_color)
 ax11.set(ylim=(bot_t_range,top_t_range))
 ax11.label_outer()
+ax11.tick_params(axis='y', colors=temp_color, length=t_tick_length)  # For y-axis ticks
+
+# E3SM panel
+ax11_2 = axs[1, 1].twinx()
+ax11_2.plot(e3smtime, e3smRH, color=rh_color, linestyle=rh_linestyle, linewidth=rh_line_width, label='E3SM_RH')
+ax11_2.set_ylabel('Relative Humidity (%)', color=rh_color)
+#ax11_2.tick_params(axis='y', labelcolor=rh_color)
+ax11_2.set(ylim=(0, rh_max_axis))
+ax11_2.label_outer()
+ax11_2.tick_params(axis='y', colors=rh_color, length=rh_tick_length)  # For y-axis ticks
+ax11_2.set_yticks(np.arange(0, 101, 20))
+
+
+
 
 # Do things that apply to all subplots
 for ax in axs.flat:
@@ -209,12 +294,23 @@ for ax in axs.flat:
 for ax in axs.flat:
     ax.set_xlabel('Date (UTC)')
     ax.set_ylabel('Precip. rate (mm/hr)', color=rain_color)
+    ax.tick_params(axis='y', colors=rain_color, length=rain_tick_length)  # For y-axis ticks
 
 for ax in axs.flat:
     ax.label_outer()
 
+## Label rightmost axes
 ax01.set_ylabel('Sfc. temp. (K)',color=temp_color)
 ax11.set_ylabel('Sfc. temp. (K)',color=temp_color)
+ax01_2.set_ylabel('Relative Humidity (%)', color=rh_color)
+ax11_2.set_ylabel('Relative Humidity (%)', color=rh_color)
+
+## Move RH axis to the right
+shift_dist=1.29
+ax01_2.spines["right"].set_position(("axes", shift_dist))
+ax01_2.spines["right"].set_visible(True)
+ax11_2.spines["right"].set_position(("axes", shift_dist))
+ax11_2.spines["right"].set_visible(True)
 
 plt.savefig("./output/precip_vs_t_1996.pdf", format="pdf", bbox_inches="tight")
 
