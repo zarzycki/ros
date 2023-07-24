@@ -9,5 +9,6 @@ dependencies:
   - xarray==2023.7.0
   - matplotlib==3.7.2
   - jpeg==9e
-  - netcdf4==1.6.4
+  - metpy==1.5.*
+  - netcdf4>=1.6
   # - ncl
