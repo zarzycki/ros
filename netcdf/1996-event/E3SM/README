@@ -1,0 +1,7 @@
+cd /storage/home/cmz5202/group/NDG-ne30-ERA5-N58/atm/hist
+ncrcat NDG-ne30-ERA5-N58.eam.h5.1995-12-03-00000.nc NDG-ne30-ERA5-N58.eam.h5.1996-01-02-00000.nc NDG-ne30-ERA5-N58.eam.h5.1996-02-01-00000.nc E3SM-catted-native.nc
+ncremap -i E3SM-catted-native.nc -o E3SM-catted-native.nc_regrid.nc -m /storage/home/cmz5202/work/maps/hyperion/map_ne30np4_to_1.0x1.0_CONUS.nc
+ncks -d time,1996-01-01,1996-02-01 -d lat,38.,45. -d lon,-80.,-74. E3SM-catted-native.nc_regrid.nc tmp.nc
+mv -v tmp.nc E3SM-catted-native.nc_regrid.v2.nc
+rm -v E3SM-catted-native.nc_regrid.nc
+rm -v E3SM-catted-native.nc
