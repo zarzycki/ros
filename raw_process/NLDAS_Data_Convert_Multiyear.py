@@ -1,18 +1,17 @@
 #!/usr/bin/env python
-# coding: utf-8
-
-# In[2]:
-
-
 import os
 import numpy as np
 import xarray as xr
-#get_ipython().run_line_magic('matplotlib', 'notebook')
 import matplotlib.pyplot as plt
 import pandas as pd
+import sys
 
-
-# In[3]:
+## Command line args
+## Note, sys.arg[0] is the name of the function
+print ("Number of arguments: ", len(sys.argv))
+print ("The arguments are: " , str(sys.argv))
+RAWDIR = sys.argv[1]
+outdir= sys.argv[2]
 
 
 years = np.arange(1985, 2006, 1); years = [str(i) for i in years]
@@ -27,10 +26,6 @@ lonmin = -80.0; lonmax = -74.0
 '''
 Latitude and longitude can be modified to other areas
 '''
-
-
-# In[2]:
-
 
 def get_suss(vic, forcing, latrange, lonrange):
     susslats = forcing["lat_110"].sel(lat_110 = latrange).values;
@@ -84,9 +79,9 @@ for year in years:
     print("Getting "+year)
     susslist = []
     for month in months:
-        ffile = "/gpfs/group/cmz5202/default/ros/NLDAS-VIC/NLDAS_2_FORCING_"+year+month+".nc"
+        ffile = RAWDIR+"/NLDAS-VIC/NLDAS_2_FORCING_"+year+month+".nc"
         forcing = xr.open_dataset(ffile);
-        vfile = "/gpfs/group/cmz5202/default/ros/NLDAS-VIC/NLDAS_2_VIC_"+year+month+".nc"
+        vfile = RAWDIR+"/NLDAS-VIC/NLDAS_2_VIC_"+year+month+".nc"
         vic = xr.open_dataset(vfile)
         sussdata = get_suss(vic, forcing, latrange, lonrange)
         susslist.append(sussdata)
@@ -102,9 +97,6 @@ run on the full merged dataset rather than individual months prevents the first 
 '''
 
 
-# In[9]:
-
-outdir = "/storage/home/cmz5202/group/ros/proc/"
 if not os.path.exists(outdir):
     os.mkdirs(outdir)
 startyear = years[0]; endyear = years[-1]

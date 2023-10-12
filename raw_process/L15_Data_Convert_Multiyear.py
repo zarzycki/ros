@@ -1,19 +1,18 @@
 #!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 import os
 import numpy as np
 import xarray as xr
 import pandas as pd
 from datetime import datetime
-#get_ipython().run_line_magic('matplotlib', 'notebook')
 import matplotlib.pyplot as plt
+import sys
 
-
-# In[2]:
+## Command line args
+## Note, sys.arg[0] is the name of the function
+print ("Number of arguments: ", len(sys.argv))
+print ("The arguments are: " , str(sys.argv))
+RAWDIR = sys.argv[1]
+outdir= sys.argv[2]
 
 
 years = np.arange(1985, 2006, 1); years = [str(i) for i in years]
@@ -22,9 +21,6 @@ susslats = slice(39.0, 44.0); susslons = slice(-80.0, -74.0)
 The range of years and lat/lon can be specified by the user. Note that the last year of the range is not included.
 So, for example, years = np.arange(1992, 2003) would give 1992, 1993, ... 2001, 2002. 2003 would not be included.
 '''
-
-
-# In[3]:
 
 
 def get_suss(meteo, fluxes, susslats, susslons):
@@ -80,9 +76,9 @@ for year in years:
     print("Getting "+year)
     susslist = []
     for month in months:
-        mstring = "/gpfs/group/cmz5202/default/ros/L15/L15_Meteo_"+year+month+".nc"
+        mstring = RAWDIR+"/L15/L15_Meteo_"+year+month+".nc"
         meteo = xr.open_dataset(mstring)
-        fstring = "/gpfs/group/cmz5202/default/ros/L15/L15_Fluxes_"+year+month+".nc"
+        fstring = RAWDIR+"/L15/L15_Fluxes_"+year+month+".nc"
         fluxes = xr.open_dataset(fstring)
         susslist.append(get_suss(meteo, fluxes, susslats, susslons))
     sussdata = xr.concat(susslist, dim = "time");
@@ -98,7 +94,6 @@ first day of the dataset in its argument. Having the function run on the full me
 months prevents the first day of each month from being dropped.
 '''
 
-outdir = "/storage/home/cmz5202/group/ros/proc/"
 if not os.path.exists(outdir):
     os.mkdirs(outdir)
 startyear = years[0]; endyear = years[-1];
@@ -108,10 +103,5 @@ yeardata.to_netcdf(outdir+"/L15_"+startyear+"to"+endyear+"_merged.nc")
 This saves the dataset in the L15 directory. After the file is saved, this program shouldn't be run again unless
 some aspect of the dataset (latitude, longitude, time period) is being changed.
 '''
-
-
-# In[ ]:
-
-
 
 

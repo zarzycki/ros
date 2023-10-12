@@ -1,9 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 import os
 import numpy as np
 import xarray as xr
@@ -11,10 +6,14 @@ import pandas as pd
 from datetime import datetime, timedelta
 import matplotlib
 import matplotlib.pyplot as plt
+import sys
 
-
-# In[2]:
-
+## Command line args
+## Note, sys.arg[0] is the name of the function
+print ("Number of arguments: ", len(sys.argv))
+print ("The arguments are: " , str(sys.argv))
+RAWDIR = sys.argv[1]
+outdir= sys.argv[2]
 
 years = np.arange(1985, 2006, 1); years = [str(i) for i in years]
 susslats = slice(39.0, 44.0); susslons = slice(360.-80.0,360.-74.0)
@@ -46,7 +45,7 @@ def get_suss(precipraw, rofraw, sweraw, susslat, susslon):
     precipsuss = xr.concat(precipsuss, dim = "time")
     '''
     This averages 4 6-hour accumulated precipitation fields at 00Z, 06Z, 12Z, and 18Z each day, returning a single
-    temporally averaged data array for the basin. The "concat" function puts the data arrays in temporal order. 
+    temporally averaged data array for the basin. The "concat" function puts the data arrays in temporal order.
     However, at this point, the "time" coordinate only reads "0, 1, 2", etc, and isn't yet assigned to specific days.
     The factor of 8.64*10^7 converts from m/s to mm/day.
     '''
@@ -84,7 +83,7 @@ def get_dswe(sussdata):
     '''
     dswe = xr.Dataset({"dSWE" :(("time", "lat", "lon"), dswesuss)},
                      {"time": ("time", times), "lat": susslats, "lon": susslons})
-    
+
     combdata = xr.merge([sussdata.sel(time = times), dswe])
     '''
     This adds dSWE to the existing dataset of precip, runoff, and SWE. Note that the times start at the second day
@@ -96,9 +95,9 @@ years = range(1985, 2006, 1); years = [str(i) for i in years]
 wlist = []
 for year in years:
     print("Getting "+year)
-    precipdata = xr.open_dataset("/gpfs/group/cmz5202/default/ros/JRA/JRA.h1."+year+".PRECT.nc")
-    rofdata = xr.open_dataset("/gpfs/group/cmz5202/default/ros/JRA/JRA.h1."+year+".ROF.nc")
-    swedata = xr.open_dataset("/gpfs/group/cmz5202/default/ros/JRA/JRA.h1."+year+".SWE.nc")
+    precipdata = xr.open_dataset(RAWDIR+"/JRA/JRA.h1."+year+".PRECT.nc")
+    rofdata = xr.open_dataset(RAWDIR+"/JRA/JRA.h1."+year+".ROF.nc")
+    swedata = xr.open_dataset(RAWDIR+"/JRA/JRA.h1."+year+".SWE.nc")
     wdata = get_suss(precipdata, rofdata, swedata, susslats, susslons)
     wdata = wdata.sel(time=~((wdata.time.dt.month == 2) & (wdata.time.dt.day == 29)))
     wlist.append(wdata)
@@ -117,7 +116,6 @@ identical in variable names for easy comparison.
 '''
 #tdata = get_suss(precipdata, rofdata, swedata, susslats, susslons); print(tdata)
 
-outdir = "/storage/home/cmz5202/group/ros/proc/"
 if not os.path.exists(outdir):
     os.mkdirs(outdir)
 startyear = years[0]; endyear = years[-1]
