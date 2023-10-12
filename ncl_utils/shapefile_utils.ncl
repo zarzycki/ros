@@ -6,7 +6,7 @@
 ;
 ; plot_shapefile - plots data in a shapefile over a map.
 ;
-; shapefile_mask_data - masks a data array based on outlines in 
+; shapefile_mask_data - masks a data array based on outlines in
 ;   a shapefile
 ;======================================================================
 
@@ -52,7 +52,7 @@ begin
   print("======================================================================")
   print("Filename: " + dq + shapefile_name + dq)
   print("   Geometry type: " + f@geometry_type)
-  print("   # of features: " + num_features) 
+  print("   # of features: " + num_features)
   print("   Min/max lat:   " + sprintf("%7.2f",min(lat)) + "/" + sprintf("%7.2f",max(lat)))
   print("   Min/max lon:   " + sprintf("%7.2f",min(lon)) + "/" + sprintf("%7.2f",max(lon)))
   print("   Variable names and their types:")
@@ -66,9 +66,9 @@ end
 ; shapefile_mask_data
 ;
 ; This function masks a rectilinear, curvilinear, or unstructured
-; data array based on either all the outlines in a shapefile, or 
+; data array based on either all the outlines in a shapefile, or
 ; based on a string variable name in a shapefile and a list of strings
-; to check for, like "Water body" or (/"Ohio","Michigan"/). 
+; to check for, like "Water body" or (/"Ohio","Michigan"/).
 ;
 ; You have the option to return the mask array, rather than the masked
 ; data array.
@@ -92,12 +92,12 @@ end
 ;   "shape_names" - List of string names in "shape_name" to mask against
 ;                   [no default]
 ;
-;   "return_mask" - Whether to return a mask array (0s and 1s) 
+;   "return_mask" - Whether to return a mask array (0s and 1s)
 ;                   instead of the masked data.
 ;                   [default False]
 ;
-;   "minlat", "maxlat", "minlon", "maxlon" - You can tell the masking 
-;                   routine what rough lat/lon box you are interested 
+;   "minlat", "maxlat", "minlon", "maxlon" - You can tell the masking
+;                   routine what rough lat/lon box you are interested
 ;                   in, so that it doesn't check every lat/lon segment
 ;                   in the shapefile.
 ;                   [default is the min/max of the lat/lon on shapefile]
@@ -111,10 +111,10 @@ end
 ;                   [default False]
 ;
 ;  - If a rectilinear grid, then "data" must have coordinate arrays
-;    attached. 
-;  - If a curvilinear grid, then "data" must have the special lat2d 
+;    attached.
+;  - If a curvilinear grid, then "data" must have the special lat2d
 ;    and lon2d attributes attached.
-;  - If a unstructured grid, then "data"must have the special lat1d 
+;  - If a unstructured grid, then "data"must have the special lat1d
 ;    and lon1d attributes attached.
 ;======================================================================
 undef("shapefile_mask_data")
@@ -122,7 +122,7 @@ function shapefile_mask_data(data:numeric,shapefile_name[1]:string,\
                              opt[1]:logical)
 local mask_start_time, mask_end_time,keep_true_value, keep_false_value, \
 dims, rank, grid_type, lat1d, lon1d, nlatlon1d, f, segments, geometry, \
-segsDims, geomDims, geom_segIndex, geom_numSegs, segs_xyzIndex, 
+segsDims, geomDims, geom_segIndex, geom_numSegs, segs_xyzIndex,
 segs_numPnts,numFeatures, lat, lon, shp_mask_names, found, nf, numFeatures, \
 startSegment, numSegments, seg, startPT, endPT, lon_sub, lat_sub, \
 min_lat_shp, max_lat_shp, min_lon_shp, max_lon_shp
@@ -229,7 +229,7 @@ begin
   segsDims = dimsizes(segments)
   geomDims = dimsizes(geometry)
 
-;---Read global attributes  
+;---Read global attributes
   geom_segIndex = f@geom_segIndex
   geom_numSegs  = f@geom_numSegs
   segs_xyzIndex = f@segs_xyzIndex
@@ -237,11 +237,11 @@ begin
   numFeatures   = geomDims(0)
 
 ;---Read shapefile lat/lon
-  lon = f->x
-  lat = f->y
+  lon = f->y
+  lat = f->x
 ;
-; If shp_var_name is specified, then get the approximate lat/lon box that 
-; encloses the shapefile areas of interest. This can make the 
+; If shp_var_name is specified, then get the approximate lat/lon box that
+; encloses the shapefile areas of interest. This can make the
 ; gc_inout checking go faster later. If the user has input
 ; all four "usr_min/max_lat/lon" attributes, then don't do the check.
 ;
@@ -256,7 +256,7 @@ begin
           startPT = segments(seg, segs_xyzIndex)
           endPT   = startPT + segments(seg, segs_numPnts) - 1
           lat_sub := lat(startPT:endPT)
-          lon_sub := lon(startPT:endPT) 
+          lon_sub := lon(startPT:endPT)
           if(found) then
             min_lat_shp = min((/min_lat_shp,min(lat_sub)/))
             max_lat_shp = max((/max_lat_shp,max(lat_sub)/))
@@ -279,7 +279,7 @@ begin
     min_lon_shp = min(lon)
     max_lon_shp = max(lon)
   end if
-  
+
 ;--lat/lon coordinates of data array
   min_lat_data = min(lat1d)
   max_lat_data = max(lat1d)
@@ -344,12 +344,12 @@ begin
           startPT = segments(seg, segs_xyzIndex)
           endPT   = startPT + segments(seg, segs_numPnts) - 1
           lat_sub := lat(startPT:endPT)
-          lon_sub := lon(startPT:endPT) 
+          lon_sub := lon(startPT:endPT)
           ii_latlon := ind(min(lat_sub).le.lat1d.and.lat1d.le.max(lat_sub).and.\
                            min(lon_sub).le.lon1d.and.lon1d.le.max(lon_sub))
           if(any(ismissing(ii_latlon))) then
             continue
-          end if          
+          end if
           nii = dimsizes(ii_latlon)
           do n=0,nii-1
             iltln = ii_latlon(n)
@@ -374,7 +374,7 @@ begin
             startPT = segments(seg, segs_xyzIndex)
             endPT   = startPT + segments(seg, segs_numPnts) - 1
             lat_sub := lat(startPT:endPT)
-            lon_sub := lon(startPT:endPT) 
+            lon_sub := lon(startPT:endPT)
             if(.not.(all(lon_sub.lt.min_lon_data).or. \
                      all(lon_sub.gt.max_lon_data).or. \
                      all(lat_sub.lt.min_lat_data).or. \
@@ -435,10 +435,10 @@ end
 ;
 ;          shapefile_name - Name of shapefile, i.e."AUS_adm0.shp"
 ;
-;          geometry_type  - Geometry type, read off shapefile via 
-;                           "geometry_type" attribute. Must be 
+;          geometry_type  - Geometry type, read off shapefile via
+;                           "geometry_type" attribute. Must be
 ;                           "point", "polylines", or "polygon".
-;                           As of NCL V6.5.0, this routine will 
+;                           As of NCL V6.5.0, this routine will
 ;                           use "point" if the geometry is not
 ;                           set or not recognized.
 ;
@@ -446,13 +446,13 @@ end
 ;                           read off file via "y" and "x" arrays on
 ;                           shapefile.
 ;
-; This function creates a map for which to add shapefile outlines 
+; This function creates a map for which to add shapefile outlines
 ; or points. It uses the shapefile_name for a title, and the geometry
 ; type to determine whether to draw map outlines.
 ;
 ; Note: this function could have been written to open the shapefile
 ; and read the geometry type and lat/lon, but since it is likely
-; to be called from a routine that has to read lat/lon anyway, it 
+; to be called from a routine that has to read lat/lon anyway, it
 ; seemed best just to pass this information in, to save time and
 ; memory.
 ;======================================================================
@@ -483,21 +483,21 @@ begin
   res@pmTickMarkDisplayMode = "Always"
 
   map = gsn_csm_map(wks,res)
-  
+
   return(map)
 end
 
 ;======================================================================
-; plot_shapefile - Given a shapefile name ("AUS_adm0.shp"), this 
+; plot_shapefile - Given a shapefile name ("AUS_adm0.shp"), this
 ; procedure draws a map with the data from the given shapefile drawn
 ; on top.
 ;
-; The data is drawn depending on the "geometry_type" attribute of 
+; The data is drawn depending on the "geometry_type" attribute of
 ; the shapefile:
 ;
 ;    - "points"   - data is drawn as filled black circles
 ;    - "polyline" - data is drawn as black polylines
-;    - "polygon"  - data is drawn as colored, filled polygons, with 
+;    - "polygon"  - data is drawn as colored, filled polygons, with
 ;                   black polylines.
 ;======================================================================
 undef("plot_shapefile")
@@ -512,7 +512,7 @@ begin
     print("No 'geometry_type' attribute is present.")
     exit
   else if(.not.any(f@geometry_type.eq.(/"point","polyline","polygon"/))) then
-    print("plot_shapefile: Warning: the 'geometry_type' attribute on '" + shapefile_name + "'") 
+    print("plot_shapefile: Warning: the 'geometry_type' attribute on '" + shapefile_name + "'")
     print("             is not set to 'point', 'polyline', or 'polygon'.")
     print("             Will try to plot this data using 'point', but you")
     print("             may want to examine the file further to make sure")
@@ -530,7 +530,7 @@ begin
   lat = f->y
   lon = f->x
   map = create_shapefile_map(wks,shapefile_name,geometry_type,lat,lon)
-  
+
   sres = True
   if(geometry_type.eq."point") then
     sres@gsMarkerIndex = 16

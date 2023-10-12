@@ -5,8 +5,8 @@ import xarray as xr
 import scipy.stats as stats
 import os
 
-OUTPUTDIR="corr_stats"
-PRINT_ALL_MATRICES=False  ## Print other offsets to verify nothing is +/- 1 day, etc.
+OUTPUTDIR="./corr_stats/"
+PRINT_ALL_MATRICES=True  ## Print other offsets to verify nothing is +/- 1 day, etc.
 #-------
 
 ## Define some functions
