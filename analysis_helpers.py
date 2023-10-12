@@ -9,6 +9,10 @@ def is_odd(num):
 
 def get_events(data, wthresh, sthresh, pthresh, window):
 
+    # Do we return moving window timeseries or raw daily values?
+    # False will accurately capture "real" extrema
+    output_smoothed = False
+
     # Straight average areal
     #dswe = data["dSWE"]; rof = data["ROF"]; precip = data["PRECIP"]
 
@@ -91,9 +95,15 @@ def get_events(data, wthresh, sthresh, pthresh, window):
                 '''
 
                 dtlist = np.append(dtlist, tdt)
-                preciplist = np.append(preciplist, xprecip)
-                runofflist = np.append(runofflist, xrof)
-                dswelist = np.append(dswelist, xdswe)
+                if output_smoothed:
+                    preciplist = np.append(preciplist, wprecip)
+                    runofflist = np.append(runofflist, wrof)
+                    dswelist = np.append(dswelist, wdswe)
+                else:
+                    preciplist = np.append(preciplist, xprecip)
+                    runofflist = np.append(runofflist, xrof)
+                    dswelist = np.append(dswelist, xdswe)
+
                 '''
                 This stores the start day, mean precipitation, mean runoff, and mean dSWE across the basin for the
                 5-day period.
