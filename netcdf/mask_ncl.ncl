@@ -13,8 +13,8 @@ SWE=f->SWE
 dSWE=f->dSWE
 PRECIP=f->PRECIP
 ROF=f->ROF
-BASE=f->ET
-ET=f->BASE
+;BASE=f->ET
+;ET=f->BASE
 
 if (min(SWE&lon) .gt. 0.0) then
   print("Need to flip lon")
@@ -40,10 +40,10 @@ PRECIP_MASK = PRECIP
 PRECIP_MASK = where(MASK .gt. 0.5,PRECIP_MASK,PRECIP_MASK@_FillValue)
 dSWE_MASK = dSWE
 dSWE_MASK = where(MASK .gt. 0.5,dSWE_MASK,dSWE_MASK@_FillValue)
-BASE_MASK = BASE
-BASE_MASK = where(MASK .gt. 0.5,BASE_MASK,BASE_MASK@_FillValue)
-ET_MASK = ET
-ET_MASK = where(MASK .gt. 0.5,ET_MASK,ET_MASK@_FillValue)
+;BASE_MASK = BASE
+;BASE_MASK = where(MASK .gt. 0.5,BASE_MASK,BASE_MASK@_FillValue)
+;ET_MASK = ET
+;ET_MASK = where(MASK .gt. 0.5,ET_MASK,ET_MASK@_FillValue)
 
 tmp = tofloat(SWE_MASK&time)
 delete(SWE_MASK&time)
@@ -70,5 +70,5 @@ ncdf->SWE=SWE_MASK
 ncdf->dSWE=dSWE_MASK
 ncdf->ROF=ROF_MASK
 ncdf->PRECIP=PRECIP_MASK
-ncdf->BASE=BASE_MASK
-ncdf->ET=ET_MASK
+;ncdf->BASE=BASE_MASK
+;ncdf->ET=ET_MASK

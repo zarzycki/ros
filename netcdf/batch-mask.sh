@@ -1,6 +1,8 @@
 #!/bin/bash -l
 
-PATHTOROSREPO=/Users/cmz5202/Software/ros/ros/
+PATHTOROSREPO=/scratch/cmz5202/ros/
+
+conda activate ros-metrics
 
 ncl mask_ncl.ncl 'model="NLDAS"' 'repopath="'${PATHTOROSREPO}'"'
 ncl mask_ncl.ncl 'model="L15"' 'repopath="'${PATHTOROSREPO}'"'
