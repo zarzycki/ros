@@ -11,4 +11,4 @@ dependencies:
   - jpeg==9e
   - metpy==1.5.*
   - netcdf4>=1.6
-  # - ncl
+  - ncl

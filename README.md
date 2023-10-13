@@ -13,3 +13,49 @@ conda activate ros-metrics
 # conda env remove -n ros-metrics
 ```
 
+## Instructions
+
+The instructions assume you are in the top level of the ROS repo. `ROSREPO` defines this location.
+
+### 1. Create "merged" files from raw climate data
+
+```
+cd $ROSREPO/raw-process
+# Set ROSREPO and RAWDIR in batch-raw.sh
+./batch-raw.sh
+cd ..
+```
+
+This will create four files in the "netcdf" subfolder of the repo with the "merged" datafiles over the SRB.
+
+### 2. Mask "merged" files
+
+
+```
+cd $ROSREPO/netcdf
+# Set ROSREPO
+./batch-mask.ncl
+cd ..
+```
+
+This will create four additional files in the "netcdf" subfolder of the repo, but with the data masked over the river basin.
+
+**NOTE**: If NCL is keeping "zero" values after masking, ex:
+
+```
+(0)	487 data values kept
+(0)	shapefile_mask_data: elapsed time: 11.6067 CPU seconds.
+```
+
+this is probably due to a version of NCL shipped with conda. I'm sure there are more clever solutions, but the hack is to flip the x/y calls on lines 240-241 of `ncl_utils/shapefile_utils.ncl`. See [NCL-list post](https://mailman.ucar.edu/pipermail/ncl-talk/2021-January/017775.html).
+
+### 3. Run statistics
+
+```
+$ROSREPO/batch-stats.sh
+```
+
+There are a couple bools at the top of the script.
+
+- `merge_pngs` takes the single panel outputs and merges to 2x2 png panels for visualization, although this isn't used in the paper
+- `perform_analysis` decides whether the analysis to extract the ROS events should actually take place. This needs to be true if you haven't done so already, but since this is the most expensive part of the code, it makes sense to have a T/F switch.
