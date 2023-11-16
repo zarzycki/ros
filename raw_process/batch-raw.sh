@@ -1,7 +1,7 @@
 #!/bin/bash
 
-RAWDIR="/storage/group/cmz5202/default/ros/"
-ROSREPO="/scratch/cmz5202/ros/"
+RAWDIR="/Volumes/2023DATA/ros/"
+ROSREPO="/Users/cmz5202/Software/ros/"
 
 #####
 

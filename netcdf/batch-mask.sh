@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/bash -l
 
-ROSREPO="/scratch/cmz5202/ros/"
+ROSREPO="/Users/cmz5202/Software/ros/"
 
 #####
 
