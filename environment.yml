@@ -11,4 +11,5 @@ dependencies:
   - jpeg==9e
   - metpy==1.5.*
   - netcdf4>=1.6
+  - imagemagick=7.1
   - ncl
