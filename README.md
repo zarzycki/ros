@@ -3,7 +3,7 @@
 Create environment:
 
 ```
-mamba env create -n ros-metrics --file environment.yml
+conda env create -n ros-metrics --file environment.yml   ### or mamba
 conda activate ros-metrics
 
 ## To delete if needed
@@ -12,6 +12,14 @@ conda activate ros-metrics
 # Deprecated:
 # conda env remove -n ros-metrics
 ```
+
+NOTE: Currently the repository requires NCL to mask the basin and create some climatology plots. NCL does not compile natively on Apple Silicon. If you must use such a system, the current solution is to install and x86_64 compatible NCL using Rosetta or otherwise outside of conda/mamba. If you do so, either comment out the NCL line from `environment.yml` or uninstall NCL from the conda environment created above to remove conflicts.
+
+```
+conda activate ros-metrics
+conda uninstall ncl  ### or mamba
+```
+
 
 ## Instructions
 
