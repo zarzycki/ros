@@ -36,9 +36,9 @@ df = raw_df
 
 sub_df = df[df['Thresh'] == which_thresh]
 
-varlist = ['wt_rof','st_swe','pt_pre','Event Length', 'Average dSWE', 'Max dSWE', 'Average Runoff', 'Max Runoff', 'Average Precip', 'Max Precip']
+varlist = ['st_swe','wt_rof','pt_pre','Event Length', 'Average dSWE', 'Max dSWE', 'Average Runoff', 'Max Runoff', 'Average Precip', 'Max Precip']
 # Labels that match varlist
-labellist = ['wt_rof','st_swe','pt_pre','Event Length', 'Average dSWE', 'Max dSWE', 'Average ROF', 'Max ROF', 'Average PRECIP', 'Max PRECIP']
+labellist = ['st_swe','wt_rof','pt_pre','Event Length', 'Average dSWE', 'Max dSWE', 'Average ROF', 'Max ROF', 'Average PRECIP', 'Max PRECIP']
 
 length_written=False
 thresh_written=False
