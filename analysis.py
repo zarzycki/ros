@@ -100,146 +100,149 @@ else:
     perclabel = "AB"
 eventdf.to_csv(outputdir+"/Events_"+model+"_"+startyear+"to"+endyear+"_"+perclabel+".csv")
 
-# The max/min values for shading should be defined outside of the loop, since min/max is a slow op and the value doesn't change.
-#minshadingyval=min(dswemean)
-#maxshadingyval=max([max(rofmean),max(precipmean)])
-minshadingyval=-60
-maxshadingyval=62
+## Only create shaded plots if using normalized framework. Flip to <= 0.0 for fixed thresholds
+if percFilter > 0.0:
+    print("PLOTTING!")
+    # The max/min values for shading should be defined outside of the loop, since min/max is a slow op and the value doesn't change.
+    #minshadingyval=min(dswemean)
+    #maxshadingyval=max([max(rofmean),max(precipmean)])
+    minshadingyval=-60
+    maxshadingyval=62
 
-sum_swe = np.empty(len(years))
-counter=0
+    sum_swe = np.empty(len(years))
+    counter=0
 
-for year in years:
-    print("Plotting year: "+year) if debug_verbose else None;
-    year = int(year)
-    #wyear = pltdates.sel(time = slice(str(year)+"-10-01", str(year+1)+"-09-30"))
-    wyear = pltdates.sel(time = slice(str(year)+"-11-15", str(year+1)+"-04-30"))
-    fig, ax = plt.subplots(1, 1, figsize = (8, 4))
-    ax.set_ylim(-60, 62)
-    ax.margins(x=0)
-    ax.set_axisbelow(True)
-    ax.xaxis.grid(True, color='gray', linestyle='--', linewidth=0.5, alpha = 0.8)
-    #debugargs="marker='o', mec='k', ms=0.7"
-
-    if (plot_streams):
-        #markstyle='$\u25AE$'
-        #markstyle='s'
-        markstyle='$\u2223$'
-        #markstyle='|'
-        marksize=25.0
-        ax.plot(wyear, xr.where(streamsussx["P75"].sel(datetime = wyear), 55., -9999.), color = "lightcyan", marker=markstyle, ms=marksize, linestyle = 'None', label='_nolegend_')
-        ax.plot(wyear, xr.where(streamsussx["P90"].sel(datetime = wyear), 55., -9999.), color = "lightskyblue", marker=markstyle, ms=marksize, linestyle = 'None', label='_nolegend_')
-        ax.plot(wyear, xr.where(streamsussx["P95"].sel(datetime = wyear), 55., -9999.), color = "royalblue", marker=markstyle, ms=marksize, linestyle = 'None', label='_nolegend_')
-        ax.plot(wyear, xr.where(streamsussx["P99"].sel(datetime = wyear), 55., -9999.), color = "midnightblue", marker=markstyle, ms=marksize, linestyle = 'None', label='_nolegend_')
-
-    ax.plot(wyear, precipmean.sel(time = wyear), color = "#009E73", label = "PRECIP", linewidth=2.5, alpha = 1.0)
-    ax.plot(wyear, 3.0*rofmean.sel(time = wyear), color = "#E69F00", label = "ROF", linewidth=2.0, alpha = 0.8)
-    ax.plot(wyear, dswemean.sel(time = wyear), color = "#CC79A7", label = "dSWE", linewidth=1.75, alpha = 0.6)
-    for event in pdevents:
-        if (np.isin(event, wyear).all()):
-            print("Coloring event") if debug_verbose else None;
-            ax.fill_between(event, minshadingyval, maxshadingyval, color = "blue", alpha = 0.15)
-    '''
-    Highlights the flagged ROS events with a red rectangle
-    '''
-    ax.legend()
-    ax.set_title(model+" RoS Events")
-    fig.savefig(outputdir+"/"+model+"_"+str(year)+"_events.pdf")
-    '''
-    This creates a time series plot of dSWE, runoff, and precipitation for each water year in the dataset, along
-    with a red rectangle highlighting each flagged event. This helps to identify the signatures associated with
-    rain-on-snow events.
-    '''
-    plt.close()
-
-    thisYeardSWE=dswemean.sel(time = wyear)
-    sum_swe[counter] = np.sum(thisYeardSWE[thisYeardSWE>0].values)
-    counter = counter+1
-
-#print(sum_swe)
-np.savetxt(outputdir+"/"+model+"_yearly_total_SWE.csv", sum_swe, delimiter=",")
-
-for year in years:
-    print("Plotting SWE year: "+year) if debug_verbose else None;
-    year = int(year)
-    wyear = pltdates.sel(time = slice(str(year)+"-11-15", str(year+1)+"-04-30"))
-    fig, ax = plt.subplots(1, 1, figsize = (8, 4))
-    ax.set_ylim(0, 200)
-    ax.margins(x=0)
-    ax.xaxis.grid(True, color='gray', linestyle='--', linewidth=0.5, alpha = 0.8)
-
-    ax.plot(wyear, swemean.sel(time = wyear), color = "#CC79A7", label = "SWE", linewidth=1.75, alpha = 0.6)
-    for event in pdevents:
-        if (np.isin(event, wyear).all()):
-            print("Coloring event") if debug_verbose else None;
-            ax.fill_between(event, minshadingyval, maxshadingyval, color = "blue", alpha = 0.15)
-
-    ax.legend()
-    ax.set_title(model+" SWE evolution")
-    fig.savefig(outputdir+"/"+model+"_"+str(year)+"_SWE.pdf")
-
-    plt.close()
-
-xaxis = xaxis.upper(); yaxis = yaxis.upper()
-checkbubblevars = np.array(["PRECIP", "ROF", "DSWE"])
-if yaxis == xaxis:
-    print("You must plot a different variable for each axis")
-    pass
-elif np.logical_not(np.isin(xaxis, checkbubblevars) and np.isin(yaxis, checkbubblevars)):
-    print("Please enter a valid variable to plot: PRECIP, ROF, or dSWE")
-    pass
-else:
-    if xaxis.upper() == "DSWE":
-        xaxis = "dSWE"
-        signfilter = 0
-    elif yaxis.upper() == "DSWE":
-        yaxis = "dSWE"
-        signfilter = 1
-    else:
-        sizevar = "dSWE"
-        signfilter = 2
-    '''
-    Lets users not worry about capitalization when entering plotting variables
-    '''
     for year in years:
-        print("Bubbling year: "+year+"") if debug_verbose else None;
-        wyear = get_wyear(year, sussdata)
-
-        #This lets users put in in only the axis variables and have the size variable be selected automatically
-        sizevar = (set({"PRECIP", "ROF", "dSWE"}) - set({xaxis, yaxis})).pop()
-
-        sizecoef=2.6
-        totdswes = dswemean.sel(time = wyear); totrofs = rofmean.sel(time = wyear); totprecips = precipmean.sel(time = wyear)
-        xvals = sussdata[xaxis].mean(dim = ("lat", "lon")).sel(time = wyear)
-        yvals = sussdata[yaxis].mean(dim = ("lat", "lon")).sel(time = wyear)
-        sivals = sussdata[sizevar].mean(dim = ("lat", "lon")).sel(time = wyear)
-        signvals = [xvals, yvals, sivals][signfilter]
-        posx = xvals[signvals>0]; negx = xvals[signvals<0]
-        posy = yvals[signvals>0]; negy = yvals[signvals<0]
-        possize = (sivals[signvals>0])**sizecoef; negsize = (sivals[signvals<0])**sizecoef
-        evdates = wyeardates[year]
-        evxvals = xvals.sel(time = evdates); evyvals = yvals.sel(time = evdates); evsivals = sivals.sel(time = evdates)
-        evsignvals = signvals.sel(time = evdates)
-        posxf = evxvals[evsignvals>0]; negxf = evxvals[evsignvals<0]
-        posyf = evyvals[evsignvals>0]; negyf = evyvals[evsignvals<0]
-        possizef = (evsivals[evsignvals>0]**sizecoef); negsizef = (evsivals[evsignvals<0])**sizecoef
-
-        fig, ax = plt.subplots(1,1)
+        print("Plotting year: "+year) if debug_verbose else None;
+        year = int(year)
+        #wyear = pltdates.sel(time = slice(str(year)+"-10-01", str(year+1)+"-09-30"))
+        wyear = pltdates.sel(time = slice(str(year)+"-11-15", str(year+1)+"-04-30"))
+        fig, ax = plt.subplots(1, 1, figsize = (8, 4))
+        ax.set_ylim(-60, 62)
+        ax.margins(x=0)
         ax.set_axisbelow(True)
-        ax.grid(True)
-        axlims = get_bubble_axes(xaxis, yaxis)
-        ax.axvline(0, color = "black")
-        ax.axhline(0, color = "black")
-        ax.scatter(posx, posy, s = possize, facecolor = "none", edgecolor = "blue")
-        ax.scatter(negx, negy, s = negsize, facecolor = "none", edgecolor = "red")
-        ax.scatter(posxf, posyf, s = possizef, facecolor = "blue", edgecolor = "blue")
-        ax.scatter(negxf, negyf, s = negsizef, facecolor = "red", edgecolor = "red")
-        ax.set_xlim(axlims[0])
-        ax.set_ylim(axlims[1])
-        ax.set_xlabel(xaxis)
-        ax.set_ylabel(yaxis)
-        fig.suptitle(model+" Water Year "+ str(year))
-        fig.savefig(outputdir+"/"+model+"_"+str((year))+"_scatplot.pdf")
+        ax.xaxis.grid(True, color='gray', linestyle='--', linewidth=0.5, alpha = 0.8)
+        #debugargs="marker='o', mec='k', ms=0.7"
+
+        if (plot_streams):
+            #markstyle='$\u25AE$'
+            #markstyle='s'
+            markstyle='$\u2223$'
+            #markstyle='|'
+            marksize=25.0
+            ax.plot(wyear, xr.where(streamsussx["P75"].sel(datetime = wyear), 55., -9999.), color = "lightcyan", marker=markstyle, ms=marksize, linestyle = 'None', label='_nolegend_')
+            ax.plot(wyear, xr.where(streamsussx["P90"].sel(datetime = wyear), 55., -9999.), color = "lightskyblue", marker=markstyle, ms=marksize, linestyle = 'None', label='_nolegend_')
+            ax.plot(wyear, xr.where(streamsussx["P95"].sel(datetime = wyear), 55., -9999.), color = "royalblue", marker=markstyle, ms=marksize, linestyle = 'None', label='_nolegend_')
+            ax.plot(wyear, xr.where(streamsussx["P99"].sel(datetime = wyear), 55., -9999.), color = "midnightblue", marker=markstyle, ms=marksize, linestyle = 'None', label='_nolegend_')
+
+        ax.plot(wyear, precipmean.sel(time = wyear), color = "#009E73", label = "PRECIP", linewidth=2.5, alpha = 1.0)
+        ax.plot(wyear, 3.0*rofmean.sel(time = wyear), color = "#E69F00", label = "ROF", linewidth=2.0, alpha = 0.8)
+        ax.plot(wyear, dswemean.sel(time = wyear), color = "#CC79A7", label = "dSWE", linewidth=1.75, alpha = 0.6)
+        for event in pdevents:
+            if (np.isin(event, wyear).all()):
+                print("Coloring event") if debug_verbose else None;
+                ax.fill_between(event, minshadingyval, maxshadingyval, color = "blue", alpha = 0.15)
+        '''
+        Highlights the flagged ROS events with a red rectangle
+        '''
+        ax.legend()
+        ax.set_title(model+" RoS Events")
+        fig.savefig(outputdir+"/"+model+"_"+str(year)+"_events.pdf")
+        '''
+        This creates a time series plot of dSWE, runoff, and precipitation for each water year in the dataset, along
+        with a red rectangle highlighting each flagged event. This helps to identify the signatures associated with
+        rain-on-snow events.
+        '''
         plt.close()
+
+        thisYeardSWE=dswemean.sel(time = wyear)
+        sum_swe[counter] = np.sum(thisYeardSWE[thisYeardSWE>0].values)
+        counter = counter+1
+
+    #print(sum_swe)
+    np.savetxt(outputdir+"/"+model+"_yearly_total_SWE.csv", sum_swe, delimiter=",")
+
+    for year in years:
+        print("Plotting SWE year: "+year) if debug_verbose else None;
+        year = int(year)
+        wyear = pltdates.sel(time = slice(str(year)+"-11-15", str(year+1)+"-04-30"))
+        fig, ax = plt.subplots(1, 1, figsize = (8, 4))
+        ax.set_ylim(0, 200)
+        ax.margins(x=0)
+        ax.xaxis.grid(True, color='gray', linestyle='--', linewidth=0.5, alpha = 0.8)
+
+        ax.plot(wyear, swemean.sel(time = wyear), color = "#CC79A7", label = "SWE", linewidth=1.75, alpha = 0.6)
+        for event in pdevents:
+            if (np.isin(event, wyear).all()):
+                print("Coloring event") if debug_verbose else None;
+                ax.fill_between(event, minshadingyval, maxshadingyval, color = "blue", alpha = 0.15)
+
+        ax.legend()
+        ax.set_title(model+" SWE evolution")
+        fig.savefig(outputdir+"/"+model+"_"+str(year)+"_SWE.pdf")
+
+        plt.close()
+
+    xaxis = xaxis.upper(); yaxis = yaxis.upper()
+    checkbubblevars = np.array(["PRECIP", "ROF", "DSWE"])
+    if yaxis == xaxis:
+        print("You must plot a different variable for each axis")
+        pass
+    elif np.logical_not(np.isin(xaxis, checkbubblevars) and np.isin(yaxis, checkbubblevars)):
+        print("Please enter a valid variable to plot: PRECIP, ROF, or dSWE")
+        pass
+    else:
+        if xaxis.upper() == "DSWE":
+            xaxis = "dSWE"
+            signfilter = 0
+        elif yaxis.upper() == "DSWE":
+            yaxis = "dSWE"
+            signfilter = 1
+        else:
+            sizevar = "dSWE"
+            signfilter = 2
+        '''
+        Lets users not worry about capitalization when entering plotting variables
+        '''
+        for year in years:
+            print("Bubbling year: "+year+"") if debug_verbose else None;
+            wyear = get_wyear(year, sussdata)
+
+            #This lets users put in in only the axis variables and have the size variable be selected automatically
+            sizevar = (set({"PRECIP", "ROF", "dSWE"}) - set({xaxis, yaxis})).pop()
+
+            sizecoef=2.6
+            totdswes = dswemean.sel(time = wyear); totrofs = rofmean.sel(time = wyear); totprecips = precipmean.sel(time = wyear)
+            xvals = sussdata[xaxis].mean(dim = ("lat", "lon")).sel(time = wyear)
+            yvals = sussdata[yaxis].mean(dim = ("lat", "lon")).sel(time = wyear)
+            sivals = sussdata[sizevar].mean(dim = ("lat", "lon")).sel(time = wyear)
+            signvals = [xvals, yvals, sivals][signfilter]
+            posx = xvals[signvals>0]; negx = xvals[signvals<0]
+            posy = yvals[signvals>0]; negy = yvals[signvals<0]
+            possize = (sivals[signvals>0])**sizecoef; negsize = (sivals[signvals<0])**sizecoef
+            evdates = wyeardates[year]
+            evxvals = xvals.sel(time = evdates); evyvals = yvals.sel(time = evdates); evsivals = sivals.sel(time = evdates)
+            evsignvals = signvals.sel(time = evdates)
+            posxf = evxvals[evsignvals>0]; negxf = evxvals[evsignvals<0]
+            posyf = evyvals[evsignvals>0]; negyf = evyvals[evsignvals<0]
+            possizef = (evsivals[evsignvals>0]**sizecoef); negsizef = (evsivals[evsignvals<0])**sizecoef
+
+            fig, ax = plt.subplots(1,1)
+            ax.set_axisbelow(True)
+            ax.grid(True)
+            axlims = get_bubble_axes(xaxis, yaxis)
+            ax.axvline(0, color = "black")
+            ax.axhline(0, color = "black")
+            ax.scatter(posx, posy, s = possize, facecolor = "none", edgecolor = "blue")
+            ax.scatter(negx, negy, s = negsize, facecolor = "none", edgecolor = "red")
+            ax.scatter(posxf, posyf, s = possizef, facecolor = "blue", edgecolor = "blue")
+            ax.scatter(negxf, negyf, s = negsizef, facecolor = "red", edgecolor = "red")
+            ax.set_xlim(axlims[0])
+            ax.set_ylim(axlims[1])
+            ax.set_xlabel(xaxis)
+            ax.set_ylabel(yaxis)
+            fig.suptitle(model+" Water Year "+ str(year))
+            fig.savefig(outputdir+"/"+model+"_"+str((year))+"_scatplot.pdf")
+            plt.close()
 
 print("... DONE!")
