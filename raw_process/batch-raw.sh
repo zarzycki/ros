@@ -1,6 +1,6 @@
 #!/bin/bash
 
-RAWDIR="/Volumes/2023DATA/ros/"
+RAWDIR="/Users/cmz5202/NetCDF/ros/"
 ROSREPO="/Users/cmz5202/Software/ros/"
 
 #####
