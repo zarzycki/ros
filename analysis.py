@@ -100,6 +100,8 @@ else:
     perclabel = "AB"
 eventdf.to_csv(outputdir+"/Events_"+model+"_"+startyear+"to"+endyear+"_"+perclabel+".csv")
 
+panel_labels = {'L15': 'a.', 'NLDAS': 'b.', 'JRA': 'c.', 'E3SM': 'd.'}
+
 ## Only create shaded plots if using normalized framework. Flip to <= 0.0 for fixed thresholds
 if percFilter > 0.0:
     print("PLOTTING!")
@@ -147,6 +149,11 @@ if percFilter > 0.0:
         '''
         ax.legend()
         ax.set_title(model+" RoS Events")
+
+        # Add panel label
+        panel_label = panel_labels.get(model, 'Unknown Model')
+        ax.text(0.02, 0.95, panel_label, transform=ax.transAxes, fontsize=30, fontweight='bold', va='top')
+
         fig.savefig(outputdir+"/"+model+"_"+str(year)+"_events.pdf")
         '''
         This creates a time series plot of dSWE, runoff, and precipitation for each water year in the dataset, along
@@ -161,6 +168,8 @@ if percFilter > 0.0:
 
     #print(sum_swe)
     np.savetxt(outputdir+"/"+model+"_yearly_total_SWE.csv", sum_swe, delimiter=",")
+
+    #### ---> Plots of yearly SWE evolution with shaded events
 
     for year in years:
         print("Plotting SWE year: "+year) if debug_verbose else None;
@@ -178,8 +187,17 @@ if percFilter > 0.0:
                 ax.fill_between(event, minshadingyval, maxshadingyval, color = "blue", alpha = 0.15)
 
         ax.legend()
-        ax.set_title(model+" SWE evolution")
-        fig.savefig(outputdir+"/"+model+"_"+str(year)+"_SWE.pdf")
+        ax.set_title(model+" SWE evolution", fontsize=12)
+        ax.set_xlabel("Date", fontsize=12)
+        ax.set_ylabel("SWE (mm)", fontsize=12)
+        ax.tick_params(axis='both', which='major', labelsize=12)
+
+        # Add panel label
+        panel_label = panel_labels.get(model, 'Unknown Model')
+        ax.text(0.02, 0.95, panel_label, transform=ax.transAxes, fontsize=30, fontweight='bold', va='top')
+
+        plt.tight_layout()
+        fig.savefig(outputdir+"/"+model+"_"+str(year)+"_SWE.pdf", bbox_inches='tight')
 
         plt.close()
 
@@ -241,6 +259,11 @@ if percFilter > 0.0:
             ax.set_ylim(axlims[1])
             ax.set_xlabel(xaxis)
             ax.set_ylabel(yaxis)
+
+            # Add panel label
+            panel_label = panel_labels.get(model, 'Unknown Model')
+            ax.text(0.02, 0.95, panel_label, transform=ax.transAxes, fontsize=30, fontweight='bold', va='top')
+
             fig.suptitle(model+" Water Year "+ str(year))
             fig.savefig(outputdir+"/"+model+"_"+str((year))+"_scatplot.pdf")
             plt.close()
