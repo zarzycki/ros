@@ -148,13 +148,18 @@ if percFilter > 0.0:
         Highlights the flagged ROS events with a red rectangle
         '''
         ax.legend()
-        ax.set_title(model+" RoS Events")
+
+        ax.set_xlabel("Date", fontsize=14)
+        ax.set_ylabel("PRECIP, ROF, dSWE (mm/day)", fontsize=14)
+        ax.set_title(model+" RoS Events", fontsize=14)
+        ax.tick_params(axis='both', which='major', labelsize=14)
 
         # Add panel label
         panel_label = panel_labels.get(model, 'Unknown Model')
         ax.text(0.02, 0.95, panel_label, transform=ax.transAxes, fontsize=30, fontweight='bold', va='top')
 
-        fig.savefig(outputdir+"/"+model+"_"+str(year)+"_events.pdf")
+        plt.tight_layout()
+        fig.savefig(outputdir+"/"+model+"_"+str(year)+"_events.pdf", bbox_inches='tight')
         '''
         This creates a time series plot of dSWE, runoff, and precipitation for each water year in the dataset, along
         with a red rectangle highlighting each flagged event. This helps to identify the signatures associated with
@@ -187,10 +192,10 @@ if percFilter > 0.0:
                 ax.fill_between(event, minshadingyval, maxshadingyval, color = "blue", alpha = 0.15)
 
         ax.legend()
-        ax.set_title(model+" SWE evolution", fontsize=12)
-        ax.set_xlabel("Date", fontsize=12)
-        ax.set_ylabel("SWE (mm)", fontsize=12)
-        ax.tick_params(axis='both', which='major', labelsize=12)
+        ax.set_title(model+" SWE evolution", fontsize=14)
+        ax.set_xlabel("Date", fontsize=14)
+        ax.set_ylabel("SWE (mm)", fontsize=14)
+        ax.tick_params(axis='both', which='major', labelsize=14)
 
         # Add panel label
         panel_label = panel_labels.get(model, 'Unknown Model')
@@ -257,15 +262,17 @@ if percFilter > 0.0:
             ax.scatter(negxf, negyf, s = negsizef, facecolor = "red", edgecolor = "red")
             ax.set_xlim(axlims[0])
             ax.set_ylim(axlims[1])
-            ax.set_xlabel(xaxis)
-            ax.set_ylabel(yaxis)
+            ax.set_xlabel(xaxis, fontsize=14)
+            ax.set_ylabel(yaxis, fontsize=14)
+            ax.set_title(model+" Water Year "+ str(year), fontsize=14)
+            ax.tick_params(axis='both', which='major', labelsize=14)
 
             # Add panel label
             panel_label = panel_labels.get(model, 'Unknown Model')
             ax.text(0.02, 0.95, panel_label, transform=ax.transAxes, fontsize=30, fontweight='bold', va='top')
 
-            fig.suptitle(model+" Water Year "+ str(year))
-            fig.savefig(outputdir+"/"+model+"_"+str((year))+"_scatplot.pdf")
+            plt.tight_layout()
+            fig.savefig(outputdir+"/"+model+"_"+str((year))+"_scatplot.pdf", bbox_inches='tight')
             plt.close()
 
 print("... DONE!")
