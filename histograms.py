@@ -2,8 +2,13 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 import os
 import sys
+
+# Convert CDF units to percentage (i.e., 0.3 -> 30)
+def to_percentage(x, pos):
+    return f"{x * 100:.0f}"
 
 which_thresh=sys.argv[1]
 
@@ -88,12 +93,16 @@ outdf.to_csv(outputdir+"/table_stats_"+perclabel+".csv")
 
 ##### Plotting
 
-# Iteration integer for getting labellist
-ii=0
+### The settings control the figure size
+figsize = (6.5, 5)            # Leave as constant to format panels in LaTeX correctly
+title_position = [0.5, 0.92]  # If the second number is smaller, title is moved "down" y-axis
+
+###-----> Write out histograms of various statistical variables
+
+ii=0 # Iteration integer for getting labellist
 for var in varlist:
 
     print(var)
-    #var="Max dSWE"
 
     NBINS=8
 
@@ -113,6 +122,8 @@ for var in varlist:
 
     kwargs = dict(histtype='step', bins=NBINS, alpha=0.75)
 
+    plt.figure(figsize=figsize)
+
     weights = np.ones_like(x1) / len(x1)
     plt.hist(x1, **kwargs, weights=weights, linewidth=2.9, color='mediumslateblue', label="L15" )
 
@@ -127,18 +138,24 @@ for var in varlist:
 
     plt.legend(loc="upper right")
 
-    plt.suptitle(labellist[ii])
+    plttitle = plt.suptitle(labellist[ii])
+    plttitle.set_position(title_position)
+
+    # Convert CDF units to percentage (i.e., 0.3 -> 30)
+    formatter = FuncFormatter(to_percentage)
+    plt.gca().yaxis.set_major_formatter(formatter)
+
     plt.ylabel("PDF (%)")
     plt.xlabel("mm/day")
 
-    newstr=var.replace(" ", "_")
-
     #plt.show()
+    newstr=var.replace(" ", "_")  # replace any spaces with underlines for filenaming
     plt.savefig(histdir+"/"+newstr+"_"+perclabel+".pdf")
     plt.close()
 
-    ii=ii+1
+    ii=ii+1   # update iter at end of loop for next one
 
+###-----> Write out single histogram
 
 events=outdf['Num']
 
@@ -149,11 +166,15 @@ events=outdf['Num']
 
 x_pos = [i for i, _ in enumerate(x)]
 
+plt.figure(figsize=figsize)
+
 plt.bar(x_pos, events, color=('black','orange','mediumslateblue','lightskyblue'))
 
 plt.xticks(x_pos, x)
 
-plt.suptitle("Events")
+plttitle = plt.suptitle("Events")
+plttitle.set_position(title_position)
+
 plt.ylabel("Number events")
 plt.xlabel("Data Product")
 
