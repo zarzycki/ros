@@ -100,6 +100,7 @@ else:
     perclabel = "AB"
 eventdf.to_csv(outputdir+"/Events_"+model+"_"+startyear+"to"+endyear+"_"+perclabel+".csv")
 
+add_panels=False
 panel_labels = {'L15': 'a.', 'NLDAS': 'b.', 'JRA': 'c.', 'E3SM': 'd.'}
 
 ## Only create shaded plots if using normalized framework. Flip to <= 0.0 for fixed thresholds
@@ -154,9 +155,9 @@ if percFilter > 0.0:
         ax.set_title(model+" RoS Events", fontsize=14)
         ax.tick_params(axis='both', which='major', labelsize=14)
 
-        # Add panel label
-        panel_label = panel_labels.get(model, 'Unknown Model')
-        ax.text(0.02, 0.95, panel_label, transform=ax.transAxes, fontsize=30, fontweight='bold', va='top')
+        if add_panels:
+            panel_label = panel_labels.get(model, 'Unknown Model')
+            ax.text(0.02, 0.95, panel_label, transform=ax.transAxes, fontsize=30, fontweight='bold', va='top')
 
         plt.tight_layout()
         fig.savefig(outputdir+"/"+model+"_"+str(year)+"_events.pdf", bbox_inches='tight')
@@ -197,9 +198,9 @@ if percFilter > 0.0:
         ax.set_ylabel("SWE (mm)", fontsize=14)
         ax.tick_params(axis='both', which='major', labelsize=14)
 
-        # Add panel label
-        panel_label = panel_labels.get(model, 'Unknown Model')
-        ax.text(0.02, 0.95, panel_label, transform=ax.transAxes, fontsize=30, fontweight='bold', va='top')
+        if add_panels:
+            panel_label = panel_labels.get(model, 'Unknown Model')
+            ax.text(0.02, 0.95, panel_label, transform=ax.transAxes, fontsize=30, fontweight='bold', va='top')
 
         plt.tight_layout()
         fig.savefig(outputdir+"/"+model+"_"+str(year)+"_SWE.pdf", bbox_inches='tight')
@@ -267,9 +268,9 @@ if percFilter > 0.0:
             ax.set_title(model+" Water Year "+ str(year), fontsize=14)
             ax.tick_params(axis='both', which='major', labelsize=14)
 
-            # Add panel label
-            panel_label = panel_labels.get(model, 'Unknown Model')
-            ax.text(0.02, 0.95, panel_label, transform=ax.transAxes, fontsize=30, fontweight='bold', va='top')
+            if add_panels:
+                panel_label = panel_labels.get(model, 'Unknown Model')
+                ax.text(0.02, 0.95, panel_label, transform=ax.transAxes, fontsize=30, fontweight='bold', va='top')
 
             plt.tight_layout()
             fig.savefig(outputdir+"/"+model+"_"+str((year))+"_scatplot.pdf", bbox_inches='tight')
