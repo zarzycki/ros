@@ -106,6 +106,7 @@ panel_labels = {'L15': 'a.', 'NLDAS': 'b.', 'JRA': 'c.', 'E3SM': 'd.'}
 ## Only create shaded plots if using normalized framework. Flip to <= 0.0 for fixed thresholds
 if percFilter > 0.0:
     print("PLOTTING!")
+
     # The max/min values for shading should be defined outside of the loop, since min/max is a slow op and the value doesn't change.
     #minshadingyval=min(dswemean)
     #maxshadingyval=max([max(rofmean),max(precipmean)])
@@ -177,6 +178,10 @@ if percFilter > 0.0:
 
     #### ---> Plots of yearly SWE evolution with shaded events
 
+    # reset max shading value for events
+    minshadingyval=-1
+    maxshadingyval=201
+
     for year in years:
         print("Plotting SWE year: "+year) if debug_verbose else None;
         year = int(year)
@@ -186,17 +191,17 @@ if percFilter > 0.0:
         ax.margins(x=0)
         ax.xaxis.grid(True, color='gray', linestyle='--', linewidth=0.5, alpha = 0.8)
 
-        ax.plot(wyear, swemean.sel(time = wyear), color = "#CC79A7", label = "SWE", linewidth=1.75, alpha = 0.6)
+        ax.plot(wyear, swemean.sel(time = wyear), color = "#CC79A7", label = "SWE", linewidth=3.0, alpha = 0.75)
         for event in pdevents:
             if (np.isin(event, wyear).all()):
                 print("Coloring event") if debug_verbose else None;
                 ax.fill_between(event, minshadingyval, maxshadingyval, color = "blue", alpha = 0.15)
 
-        ax.legend()
-        ax.set_title(model+" SWE evolution", fontsize=14)
-        ax.set_xlabel("Date", fontsize=14)
-        ax.set_ylabel("SWE (mm)", fontsize=14)
-        ax.tick_params(axis='both', which='major', labelsize=14)
+        ax.legend(fontsize=13)
+        ax.set_title(model+" SWE evolution", fontsize=16)
+        ax.set_xlabel("Date", fontsize=15)
+        ax.set_ylabel("SWE (mm)", fontsize=15)
+        ax.tick_params(axis='both', which='major', labelsize=15)
 
         if add_panels:
             panel_label = panel_labels.get(model, 'Unknown Model')
