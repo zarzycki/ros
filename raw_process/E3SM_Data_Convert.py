@@ -75,6 +75,6 @@ yeardata = xr.concat(ysusslist, dim = "time")
 yeardata = get_dswe(yeardata)
 
 if not os.path.exists(outdir):
-    os.mkdirs(outdir)
+    os.makedirs(outdir)
 startyear = years[0]; endyear = years[-1]
 yeardata.to_netcdf(outdir+"/E3SM_"+startyear+"to"+endyear+"_merged.nc")

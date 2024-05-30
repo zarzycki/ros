@@ -137,7 +137,7 @@ identical in variable names for easy comparison.
 #tdata = get_suss(precipdata, rofdata, swedata, susslats, susslons); print(tdata)
 
 if not os.path.exists(outdir):
-    os.mkdirs(outdir)
+    os.makedirs(outdir)
 startyear = years[0]; endyear = years[-1]
 sussdata.to_netcdf(outdir+"/JRA_"+startyear+"to"+endyear+"_merged.nc")
 '''

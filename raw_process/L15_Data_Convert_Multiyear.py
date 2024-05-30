@@ -115,7 +115,7 @@ months prevents the first day of each month from being dropped.
 '''
 
 if not os.path.exists(outdir):
-    os.mkdirs(outdir)
+    os.makedirs(outdir)
 startyear = years[0]; endyear = years[-1];
 yeardata.to_netcdf(outdir+"/L15_"+startyear+"to"+endyear+"_merged.nc")
 
