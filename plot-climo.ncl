@@ -4,6 +4,13 @@ begin
 
 models = (/"L15","NLDAS","JRA","E3SM"/)
 
+if (isvar("auto_domain_climo") .and. str_lower(auto_domain_climo) .eq. "true") then
+  get_plot_domain_from_f1=True
+else
+  get_plot_domain_from_f1=False
+end if
+print("get_plot_domain_from_f1: "+get_plot_domain_from_f1)
+
 f1 = addfile("./netcdf/"+models(0)+"_1985to2005_masked.nc","r")
 f2 = addfile("./netcdf/"+models(1)+"_1985to2005_masked.nc","r")
 f3 = addfile("./netcdf/"+models(2)+"_1985to2005_masked.nc","r")
@@ -264,10 +271,17 @@ if (var .eq. "dSWE")
   res@cnFillPalette        := cmap(::-1,:)
 end if
 
-res@mpMaxLatF=43.1
-res@mpMinLatF=39.3
-res@mpMinLonF=280.7
-res@mpMaxLonF=285.7
+if (get_plot_domain_from_f1) then
+  res@mpMaxLatF=max(f1->lat)
+  res@mpMinLatF=min(f1->lat)
+  res@mpMinLonF=min(f1->lon)
+  res@mpMaxLonF=max(f1->lon)
+else
+  res@mpMaxLatF=43.1
+  res@mpMinLatF=39.3
+  res@mpMinLonF=280.7
+  res@mpMaxLonF=285.7
+end if
 res@mpCenterLonF=(res@mpMinLonF+res@mpMaxLonF)/2.
 
 res@mpDataBaseVersion = "MediumRes"
