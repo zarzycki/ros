@@ -1,9 +1,10 @@
 load "../ncl_utils/shapefile_utils.ncl"
 
 ;model="NLDAS"
+;basinshape="WBDHU2_18"
 
 f = addfile(model+"_1985to2005_merged.nc","r")
-shpfilename=repopath+"/shapes/srb/srb.shp"
+shpfilename=repopath+"/shapes/"+basinshape+"/"+basinshape+".shp"
 shp = addfile(shpfilename,"r")
 print_shapefile_info(shpfilename)
 plot_shapefile(shpfilename)
