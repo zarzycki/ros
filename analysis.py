@@ -15,6 +15,7 @@ print ("Number of arguments: ", len(sys.argv))
 print ("The arguments are: " , str(sys.argv))
 model = sys.argv[1]  #E3SM, JRA, L15, NLDAS
 percFilter=float(sys.argv[2])  # -1.  (95.)  ## Do we want to filter on a particular threshold?
+usgs_station_id=str(sys.argv[3]) # What is the txt to the gauge string?
 
 ## For now defaults
 wt = 1.4; st = 1.4; pt = 2.0  #wt = ROF threshold, st = SWE threshold, #pt = Precip rate threshold
@@ -72,7 +73,7 @@ for event in events:
 
 wyeardict = get_wyeardict(years, eventdf, sussdata);
 wyeardates = get_wyeardates(years, wyeardict);
-streamsuss = get_streamdata(years);
+streamsuss = get_streamdata(usgs_station_id,years);
 eventdf = get_evpcts(eventdf, streamsuss, swindow)
 
 # If we need info about streamflow percentiles...

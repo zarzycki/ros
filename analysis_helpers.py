@@ -223,15 +223,20 @@ def get_wyeardates(years, wyeardict):
         wyeardates[year] = [date for evdates in wyeardict[year] for date in evdates[1]]
     return wyeardates
 
-def get_streamdata(years):
+def get_streamdata(usgs_station_id,years):
 
-    streamraw = pd.read_csv("./data/suss_streamflows2.csv")
+    #streamraw = pd.read_csv("./data/suss_streamflows3.csv")
+    streamraw = pd.read_csv("./data/"+usgs_station_id+".txt",delimiter="\t",comment='#')
+    #https://waterdata.usgs.gov/nwis/dv?cb_00060=on&format=rdb&site_no=14211720&legacy=&referred_module=sw&period=&begin_date=1985-01-01&end_date=2005-12-31
     #In my case, this is a file I downloaded from https://waterdata.usgs.gov/nwis/dv?referred_module=sw
     #and uploaded to the jupyter server. Make sure that if you're doing this yourself for a different basin
     #or different set of years, you download a file at the location that you're interested in, select
     #the variable "streamflow," select the date range that corresponds to the years you're looking at.
 
-    streamraw = streamraw.rename(columns = {"119381_00060_00003": "Streamflow"})
+    # Regex to find the column that contains streamflow since the leading integer can change
+    streamflow_col = streamraw.filter(regex=r'\d+_00060_00003').columns[0]
+    # Rename column to just be "Streamflow"
+    streamraw = streamraw.rename(columns = {streamflow_col: "Streamflow"})
 
     groupdays = streamraw.groupby("datetime").mean(numeric_only=True);
     truedays = [np.datetime64(day) for day in groupdays.index]
