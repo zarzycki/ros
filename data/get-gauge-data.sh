@@ -1,9 +1,18 @@
 #!/bin/bash
 
+### Usage: ./get-gauge-data.sh 11425500
+
 # 01570500 - Harrisburg/SQ
 # 14211720 - Willamette/Portland
+# 11425500 - Sacramento River
 
-STATIONID="01570500"
+if [ -z "$1" ]; then
+  echo "Error: No USGS gauge ID (integer) provided."
+  echo "Usage: $0 <gauge_id>"
+  exit 1
+fi
+
+STATIONID=$1
 
 ################################################
 
