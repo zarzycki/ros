@@ -325,6 +325,7 @@ def get_stream_percentiles(streamsuss):
     allstream_pcts = get_prank(streamsuss, streamsuss);
     streamsuss = streamsuss.to_frame()
     streamsuss['Percentiles'] = allstream_pcts
+    streamsuss['P999'] = streamsuss['Percentiles'] > 99.9
     streamsuss['P99'] = streamsuss['Percentiles'] > 99.
     streamsuss['P98'] = streamsuss['Percentiles'] > 98.
     streamsuss['P95'] = streamsuss['Percentiles'] > 95.

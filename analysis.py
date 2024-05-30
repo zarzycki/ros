@@ -135,10 +135,11 @@ if percFilter > 0.0:
             markstyle='$\u2223$'
             #markstyle='|'
             marksize=25.0
-            ax.plot(wyear, xr.where(streamsussx["P75"].sel(datetime = wyear), 55., -9999.), color = "lightcyan", marker=markstyle, ms=marksize, linestyle = 'None', label='_nolegend_')
-            ax.plot(wyear, xr.where(streamsussx["P90"].sel(datetime = wyear), 55., -9999.), color = "lightskyblue", marker=markstyle, ms=marksize, linestyle = 'None', label='_nolegend_')
-            ax.plot(wyear, xr.where(streamsussx["P95"].sel(datetime = wyear), 55., -9999.), color = "royalblue", marker=markstyle, ms=marksize, linestyle = 'None', label='_nolegend_')
+            ax.plot(wyear, xr.where(streamsussx["P90"].sel(datetime = wyear), 55., -9999.), color = "lightcyan", marker=markstyle, ms=marksize, linestyle = 'None', label='_nolegend_')
+            ax.plot(wyear, xr.where(streamsussx["P95"].sel(datetime = wyear), 55., -9999.), color = "lightskyblue", marker=markstyle, ms=marksize, linestyle = 'None', label='_nolegend_')
+            ax.plot(wyear, xr.where(streamsussx["P98"].sel(datetime = wyear), 55., -9999.), color = "royalblue", marker=markstyle, ms=marksize, linestyle = 'None', label='_nolegend_')
             ax.plot(wyear, xr.where(streamsussx["P99"].sel(datetime = wyear), 55., -9999.), color = "midnightblue", marker=markstyle, ms=marksize, linestyle = 'None', label='_nolegend_')
+            ax.plot(wyear, xr.where(streamsussx["P999"].sel(datetime = wyear), 55., -9999.), color = "black", marker=markstyle, ms=marksize, linestyle = 'None', label='_nolegend_')
 
         ax.plot(wyear, precipmean.sel(time = wyear), color = "#009E73", label = "PRECIP", linewidth=2.5, alpha = 1.0)
         ax.plot(wyear, 3.0*rofmean.sel(time = wyear), color = "#E69F00", label = "ROF", linewidth=2.0, alpha = 0.8)
