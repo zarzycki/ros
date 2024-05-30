@@ -1,14 +1,24 @@
 #!/bin/bash -l
 
 # Script settings
+USGS_gauge="01570500"      # 01570500 for SRB, 14211720 for Willamette
 merge_pngs=true
 perform_analysis=true
+auto_domain_climo="FALSE"   # FALSE to reproduce SRB domain, TRUE otherwise
+force_purge=true
 
 ######
 
 ## Initialize conda and load env
 eval "$(command conda 'shell.bash' 'hook' 2> /dev/null)"
 conda activate ros-metrics
+
+if [ "$force_purge" == "true" ]; then
+  rm -vrf output/*
+  rm -vrf climo/*
+  rm -vrf corr_stats/*
+  rm -vrf hists/*
+fi
 
 set -e # Turn on error checking
 
@@ -20,15 +30,15 @@ set -e # Turn on error checking
 if [ "$perform_analysis" == "true" ]; then
   echo "Doing analysis..."
   # Absolute
-  python analysis.py L15 -1
-  python analysis.py NLDAS -1
-  python analysis.py JRA -1
-  python analysis.py E3SM -1
+  python analysis.py L15 -1 "$USGS_gauge"
+  python analysis.py NLDAS -1 "$USGS_gauge"
+  python analysis.py JRA -1 "$USGS_gauge"
+  python analysis.py E3SM -1 "$USGS_gauge"
   # Normalized
-  python analysis.py L15 95
-  python analysis.py NLDAS 95
-  python analysis.py JRA 95
-  python analysis.py E3SM 95
+  python analysis.py L15 95 "$USGS_gauge"
+  python analysis.py NLDAS 95 "$USGS_gauge"
+  python analysis.py JRA 95 "$USGS_gauge"
+  python analysis.py E3SM 95 "$USGS_gauge"
 fi
 
 echo "Organizing statistics"
@@ -71,10 +81,10 @@ echo "Computing annual stats"
 python annual_stats.py
 
 echo "NCL plotting"
-ncl plot-climo.ncl 'var="SWE"'
-ncl plot-climo.ncl 'var="dSWE"'
-ncl plot-climo.ncl 'var="ROF"'
-ncl plot-climo.ncl 'var="PRECIP"'
+ncl plot-climo.ncl 'var="SWE"' 'auto_domain_climo="'$auto_domain_climo'"'
+ncl plot-climo.ncl 'var="dSWE"' 'auto_domain_climo="'$auto_domain_climo'"'
+ncl plot-climo.ncl 'var="ROF"' 'auto_domain_climo="'$auto_domain_climo'"'
+ncl plot-climo.ncl 'var="PRECIP"' 'auto_domain_climo="'$auto_domain_climo'"'
 
 echo "1996 event comparison"
 python compare-1996-event.py
