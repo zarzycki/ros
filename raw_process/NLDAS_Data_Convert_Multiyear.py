@@ -5,23 +5,37 @@ import xarray as xr
 import matplotlib.pyplot as plt
 import pandas as pd
 import sys
+import argparse
 
-## Command line args
-## Note, sys.arg[0] is the name of the function
-print ("Number of arguments: ", len(sys.argv))
-print ("The arguments are: " , str(sys.argv))
-RAWDIR = sys.argv[1]
-outdir= sys.argv[2]
+# Command line arguments
+parser = argparse.ArgumentParser(description='Process some integers.')
+parser.add_argument('RAWDIR', type=str, help='The raw directory path')
+parser.add_argument('outdir', type=str, help='The output directory path')
+parser.add_argument('susslats_start', type=float, help='The start latitude for susslats')
+parser.add_argument('susslats_end', type=float, help='The end latitude for susslats')
+parser.add_argument('susslons_start', type=float, help='The start longitude for susslons')
+parser.add_argument('susslons_end', type=float, help='The end longitude for susslons')
+parser.add_argument('start_year', type=int, help='The start year for the data range')
+parser.add_argument('end_year', type=int, help='The end year for the data range')
 
+args = parser.parse_args()
 
-years = np.arange(1985, 2006, 1); years = [str(i) for i in years]
+RAWDIR = args.RAWDIR
+outdir = args.outdir
+start_year = args.start_year
+end_year = args.end_year
+
+print("RAWDIR:", RAWDIR)
+print("outdir:", outdir)
+print("start_year:", start_year)
+print("end_year:", end_year)
+
+years = np.arange(start_year, end_year + 1, 1); years = [str(i) for i in years]
 '''
 The range of years to be analyzed. Note that the last year in the range above is not included.
 '''
-latmin = 39.0; latmax = 44.0
-lonmin = -80.0; lonmax = -74.0
-
-
+latmin = args.susslats_start; latmax = args.susslats_end
+lonmin = args.susslons_start; lonmax = args.susslons_end
 
 '''
 Latitude and longitude can be modified to other areas

@@ -7,18 +7,38 @@ from datetime import datetime, timedelta
 import matplotlib
 import matplotlib.pyplot as plt
 import sys
+import argparse
 
-## Command line args
-## Note, sys.arg[0] is the name of the function
-print ("Number of arguments: ", len(sys.argv))
-print ("The arguments are: " , str(sys.argv))
-RAWDIR = sys.argv[1]
-outdir= sys.argv[2]
+# Command line arguments
+parser = argparse.ArgumentParser(description='Process some integers.')
+parser.add_argument('RAWDIR', type=str, help='The raw directory path')
+parser.add_argument('outdir', type=str, help='The output directory path')
+parser.add_argument('susslats_start', type=float, help='The start latitude for susslats')
+parser.add_argument('susslats_end', type=float, help='The end latitude for susslats')
+parser.add_argument('susslons_start', type=float, help='The start longitude for susslons')
+parser.add_argument('susslons_end', type=float, help='The end longitude for susslons')
+parser.add_argument('start_year', type=int, help='The start year for the data range')
+parser.add_argument('end_year', type=int, help='The end year for the data range')
 
-years = np.arange(1985, 2006, 1); years = [str(i) for i in years]
-susslats = slice(39.0, 44.0); susslons = slice(360.-80.0,360.-74.0)
+args = parser.parse_args()
 
-#susslats = slice(39.7, 43.1); susslons = slice(281.5, 284.7)
+RAWDIR = args.RAWDIR
+outdir = args.outdir
+susslats = slice(args.susslats_start, args.susslats_end)
+susslons = slice(360. + args.susslons_start, 360. + args.susslons_end)
+start_year = args.start_year
+end_year = args.end_year
+
+print("RAWDIR:", RAWDIR)
+print("outdir:", outdir)
+print("susslats:", susslats)
+print("susslons:", susslons)
+print("start_year:", start_year)
+print("end_year:", end_year)
+
+years = np.arange(start_year, end_year + 1, 1)
+years = [str(i) for i in years]
+
 '''
 Year range and lat/lon can be modified by the user. Note that the final year in the range is not included.
 For example, setting years = range(1992, 2003) would return 1992, 1993, ... 2001, 2002. 2003 would not be included.
@@ -91,7 +111,7 @@ def get_dswe(sussdata):
     '''
     return combdata
 
-years = range(1985, 2006, 1); years = [str(i) for i in years]
+years = range(start_year, end_year + 1, 1); years = [str(i) for i in years]
 wlist = []
 for year in years:
     print("Getting "+year)
