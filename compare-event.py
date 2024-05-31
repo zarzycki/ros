@@ -7,13 +7,14 @@ import xarray as xr
 import metpy.calc as mpcalc
 import matplotlib.ticker as ticker
 
-# lon_station=-76.8515
-# lat_station=40.2171
-# event_string='1996-event-srb'
-# L15_location='40.28125_-76.90625'
-# start_date_str="1996-01-17"
-# end_date_str="1996-01-21"
-# obs_station="CXY"
+lon_station=-76.8515
+lat_station=40.2171
+event_string='1996-event-srb'
+L15_location='40.28125_-76.90625'
+start_date_str="1996-01-17"
+end_date_str="1996-01-21"
+obs_station="CXY"
+interpolate_obs_T=True
 
 # lon_station=-123.024444
 # lat_station=44.923056
@@ -22,14 +23,16 @@ import matplotlib.ticker as ticker
 # start_date_str="1996-02-03"
 # end_date_str="1996-02-10"
 # obs_station="SLE"
+# interpolate_obs_T=True
 
-lon_station=-121.626111
-lat_station=39.134722
-event_string='1997-event-cali'
-L15_location='39.71875_-121.84375'
-start_date_str="1996-12-30"
-end_date_str="1997-01-06"
-obs_station="MYV"
+# lon_station=-121.626111
+# lat_station=39.134722
+# event_string='1997-event-cali'
+# L15_location='39.71875_-121.84375'
+# start_date_str="1996-12-30"
+# end_date_str="1997-01-06"
+# obs_station="MYV"
+# interpolate_obs_T=True
 
 ############ Automagically get bounds to get nc data
 
@@ -58,7 +61,8 @@ obstime = pd.to_datetime(obs['valid'], format='%Y-%m-%d %H:%M')
 
 obs['tmpf'] = pd.to_numeric(obs['tmpf'], errors='coerce')
 obsT = ((obs['tmpf'] - 32.) * 5/9) + 273.15
-obsT = obsT.interpolate()
+if interpolate_obs_T :
+    obsT = obsT.interpolate()
 
 ### L15-VIC data (3-hourly ASCII)
 df2 = pd.read_csv('./netcdf/event-data/'+event_string+'/L15/VIC_subdaily_fluxes_Livneh_CONUSExt_v.1.2_2013_'+L15_location,header=None,delimiter='\t')
@@ -180,11 +184,12 @@ ax.plot(L15time, L15T, 'c', label='L15') # plotting t, a separately
 ax.plot(jratime, jraT, 'm', label='JRA') # plotting t, a separately
 ax.plot(e3smtime, e3smT, 'y', label='E3SM') # plotting t, a separately
 ax.plot(NLDAStime, NLDAST, 'b', label='NLDAS') # plotting t, a separately
+ax.plot(obstime, obsT, 'k', label='Obs') # plotting t, a separately
 ax.axhline(y=273.15, color='k')
 
 ax.legend()
 
-ax.set(ylim=(258,287))
+ax.set(ylim=(258,292))
 
 ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %H''Z'))
 ax.tick_params(axis='x', labelrotation=90)
@@ -197,7 +202,7 @@ left = datetime.datetime.strptime(start_date_str, '%Y-%m-%d').date()
 right = datetime.datetime.strptime(end_date_str, '%Y-%m-%d').date()
 plt.gca().set_xbound(left, right)
 
-plt.savefig("./output/timeseries_T_1996event.pdf", format="pdf", bbox_inches="tight")
+plt.savefig("./output/timeseries_T_event.pdf", format="pdf", bbox_inches="tight")
 
 
 
@@ -356,5 +361,5 @@ ax01_2.spines["right"].set_visible(True)
 ax11_2.spines["right"].set_position(("axes", shift_dist))
 ax11_2.spines["right"].set_visible(True)
 
-plt.savefig("./output/precip_vs_t_1996.pdf", format="pdf", bbox_inches="tight")
+plt.savefig("./output/precip_vs_t.pdf", format="pdf", bbox_inches="tight")
 
