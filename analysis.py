@@ -270,8 +270,8 @@ if percFilter > 0.0:
             ax.scatter(negxf, negyf, s = negsizef, facecolor = "red", edgecolor = "red")
             ax.set_xlim(axlims[0])
             ax.set_ylim(axlims[1])
-            ax.set_xlabel(xaxis, fontsize=14)
-            ax.set_ylabel(yaxis, fontsize=14)
+            ax.set_xlabel(xaxis+" (mm/day)", fontsize=14)
+            ax.set_ylabel(yaxis+" (mm/day)", fontsize=14)
             ax.set_title(model+" Water Year "+ str(year), fontsize=14)
             ax.tick_params(axis='both', which='major', labelsize=14)
 
