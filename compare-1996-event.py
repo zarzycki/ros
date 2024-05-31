@@ -7,17 +7,41 @@ import xarray as xr
 import metpy.calc as mpcalc
 import matplotlib.ticker as ticker
 
-# Location of station?
 lon_station=-76.8515
 lat_station=40.2171
+event_string='1996-event-srb'
+L15_location='40.28125_-76.90625'
+start_date_str="1996-01-17"
+end_date_str="1996-01-21"
+
+############ Automagically get bounds to get nc data
+
+# Convert string to datetime.date
+start_date_dt = datetime.datetime.strptime(start_date_str, '%Y-%m-%d').date()
+end_date_dt = datetime.datetime.strptime(end_date_str, '%Y-%m-%d').date()
+
+# Calculate the dates for data, one day before and one day after
+start_date_data_dt = start_date_dt - datetime.timedelta(days=1)
+end_date_data_dt = end_date_dt + datetime.timedelta(days=1)
+
+# Convert dates back to strings
+start_date_data = start_date_data_dt.strftime('%Y-%m-%d')
+end_date_data = end_date_data_dt.strftime('%Y-%m-%d')
+
+print("Start Date for User:", start_date_str)
+print("End Date for User:", end_date_str)
+print("Data Start Date:", start_date_data)
+print("Data End Date:", end_date_data)
+
+############
 
 ### Load obs data
-obs = pd.read_csv('./netcdf/1996-event/obs/CXY.csv')
+obs = pd.read_csv('./netcdf/event-data/'+event_string+'/obs/CXY.csv')
 obstime = pd.to_datetime(obs['valid'],format='%m/%d/%y %H:%M')
 obsT = ((obs['tmpf'] - 32.) * 5/9) + 273.15
 
 ### L15-VIC data (3-hourly ASCII)
-df2 = pd.read_csv('./netcdf/1996-event/L15/VIC_subdaily_fluxes_Livneh_CONUSExt_v.1.2_2013_40.28125_-76.90625',header=None,delimiter='\t')
+df2 = pd.read_csv('./netcdf/event-data/'+event_string+'/L15/VIC_subdaily_fluxes_Livneh_CONUSExt_v.1.2_2013_'+L15_location,header=None,delimiter='\t')
 
 data = df2.to_numpy()
 
@@ -50,19 +74,19 @@ for i in range(len(L15time)):
 
 ### JRA data
 
-da = xr.open_dataset('./netcdf/1996-event/JRA/JRA.h1.1996.T2M.nc')
-db = xr.open_dataset('./netcdf/1996-event/JRA/JRA.h1.1996.PRECT.nc')
-dc = xr.open_dataset('./netcdf/1996-event/JRA/JRA.h1.1996.PRECSN.nc')
-dd = xr.open_dataset('./netcdf/1996-event/JRA/JRA.h1.1996.RHREFHT.nc')
+da = xr.open_dataset('./netcdf/event-data/'+event_string+'/JRA/JRA.h1.1996.T2M.nc')
+db = xr.open_dataset('./netcdf/event-data/'+event_string+'/JRA/JRA.h1.1996.PRECT.nc')
+dc = xr.open_dataset('./netcdf/event-data/'+event_string+'/JRA/JRA.h1.1996.PRECSN.nc')
+dd = xr.open_dataset('./netcdf/event-data/'+event_string+'/JRA/JRA.h1.1996.RHREFHT.nc')
 
 da2 = da.sel(lat=lat_station,lon=(360.0 + lon_station),method='nearest')
-da2 = da2.sel(time=slice("1996-01-01", "1996-01-30"))
+da2 = da2.sel(time=slice(start_date_data, end_date_data))
 db2 = db.sel(lat=lat_station,lon=(360.0 + lon_station),method='nearest')
-db2 = db2.sel(time=slice("1996-01-01", "1996-01-30"))
+db2 = db2.sel(time=slice(start_date_data, end_date_data))
 dc2 = dc.sel(lat=lat_station,lon=(360.0 + lon_station),method='nearest')
-dc2 = dc2.sel(time=slice("1996-01-01", "1996-01-30"))
+dc2 = dc2.sel(time=slice(start_date_data, end_date_data))
 dd2 = dd.sel(lat=lat_station,lon=(360.0 + lon_station),method='nearest')
-dd2 = dd2.sel(time=slice("1996-01-01", "1996-01-30"))
+dd2 = dd2.sel(time=slice(start_date_data, end_date_data))
 
 # Using 2M predictor
 jraT = da2.T2M
@@ -83,12 +107,11 @@ jratime = da2.time
 jraRAIN = jraRAIN * 1000 * 3600
 jraSNOW = jraSNOW * 1000 * 3600
 
-
 ### E3SM
 
-ea = xr.open_dataset('./netcdf/1996-event/E3SM/E3SM-catted-native.nc_regrid.v2.nc')
+ea = xr.open_dataset('./netcdf/event-data/'+event_string+'/E3SM/E3SM-catted-native_regrid.v2.nc')
 ea2 = ea.sel(lat=lat_station,lon=lon_station,method='nearest')
-ea2 = ea2.sel(time=slice("1996-01-01", "1996-01-30"))
+ea2 = ea2.sel(time=slice(start_date_data, end_date_data))
 ea2 = ea2.convert_calendar("standard")
 
 e3smT = ea2.TREFHT
@@ -105,9 +128,9 @@ e3smSNOW = e3smSNOW * 1000 * 3600
 
 
 ### NLDAS data
-fa = xr.open_dataset('./netcdf/1996-event/NLDAS/NLDAS-VIC4.0.5.v2.nc')
+fa = xr.open_dataset('./netcdf/event-data/'+event_string+'/NLDAS/NLDAS-VIC4.0.5.v2.nc')
 fa2 = fa.sel(lat=lat_station,lon=lon_station,method='nearest')
-fa2 = fa2.sel(time=slice("1996-01-01", "1996-01-30"))
+fa2 = fa2.sel(time=slice(start_date_data, end_date_data))
 
 NLDAST = fa2.Tair
 NLDASPRECT = fa2.Rainf
@@ -149,8 +172,8 @@ ax.set_axisbelow(True)
 ax.yaxis.grid(color='lightgray', linestyle='dashed')
 ax.xaxis.grid(color='lightgray', linestyle='dashed')
 
-left = datetime.date(1996, 1, 17)
-right = datetime.date(1996, 1, 21)
+left = datetime.datetime.strptime(start_date_str, '%Y-%m-%d').date()
+right = datetime.datetime.strptime(end_date_str, '%Y-%m-%d').date()
 plt.gca().set_xbound(left, right)
 
 plt.savefig("./output/timeseries_T_1996event.pdf", format="pdf", bbox_inches="tight")
