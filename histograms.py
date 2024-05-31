@@ -42,8 +42,8 @@ df = raw_df
 sub_df = df[df['Thresh'] == which_thresh]
 
 varlist = ['st_swe','wt_rof','pt_pre','Event Length', 'Average dSWE', 'Max dSWE', 'Average Runoff', 'Max Runoff', 'Average Precip', 'Max Precip']
-# Labels that match varlist
 labellist = ['st_swe','wt_rof','pt_pre','Event Length', 'Average dSWE', 'Max dSWE', 'Average ROF', 'Max ROF', 'Average PRECIP', 'Max PRECIP']
+xaxislist = ['st_swe','wt_rof','pt_pre','Event Length', 'SWE change', 'SWE change', 'Runoff', 'Runoff', 'Precipitation', 'Precipitation']
 
 length_written=False
 thresh_written=False
@@ -146,7 +146,7 @@ for var in varlist:
     plt.gca().yaxis.set_major_formatter(formatter)
 
     plt.ylabel("PDF (%)")
-    plt.xlabel("mm/day")
+    plt.xlabel(xaxislist[ii]+" (mm/day)")
 
     #plt.show()
     newstr=var.replace(" ", "_")  # replace any spaces with underlines for filenaming
