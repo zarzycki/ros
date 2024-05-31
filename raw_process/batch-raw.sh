@@ -14,7 +14,7 @@ MAXLON=-74.0
 
 ## California
 # MINLAT=32.0
-# MAXLAT=42.0
+# MAXLAT=43.0
 # MINLON=-128.0
 # MAXLON=-113.0
 

@@ -3,6 +3,7 @@
 ROSREPO="/Users/cmz5202/Software/ros/"
 BASINSHAPE="srb"
 #BASINSHAPE="WillametteBasin"
+#BASINSHAPE="SacRB_USGS1802"
 
 ######################################################################################
 

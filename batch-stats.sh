@@ -1,13 +1,14 @@
 #!/bin/bash -l
 
 # Script settings
-USGS_gauge="01570500"      # 01570500 for SRB, 14211720 for Willamette
+USGS_gauge="01570500"   # 01570500 for SRB, 14211720 for Willamette, 11425500 for SacRiver
+BASINSHAPE="srb"        # srb, WillametteBasin, SacRB_USGS1802
 merge_pngs=true
 perform_analysis=true
-auto_domain_climo=true     # false to reproduce SRB domain, true otherwise
+auto_domain_climo=false  # false to reproduce SRB domain, true otherwise
 force_purge=true
 
-######
+######################################################################################
 
 ## Initialize conda and load env
 eval "$(command conda 'shell.bash' 'hook' 2> /dev/null)"
@@ -125,12 +126,12 @@ echo "Computing annual stats"
 python annual_stats.py
 
 echo "NCL plotting"
-ncl plot-climo.ncl 'var="SWE"' 'auto_domain_climo="'$auto_domain_climo'"'
-ncl plot-climo.ncl 'var="dSWE"' 'auto_domain_climo="'$auto_domain_climo'"'
-ncl plot-climo.ncl 'var="ROF"' 'auto_domain_climo="'$auto_domain_climo'"'
-ncl plot-climo.ncl 'var="PRECIP"' 'auto_domain_climo="'$auto_domain_climo'"'
+ncl plot-climo.ncl 'var="SWE"' 'auto_domain_climo="'$auto_domain_climo'"' 'basinshape="'$BASINSHAPE'"'
+ncl plot-climo.ncl 'var="dSWE"' 'auto_domain_climo="'$auto_domain_climo'"' 'basinshape="'$BASINSHAPE'"'
+ncl plot-climo.ncl 'var="ROF"' 'auto_domain_climo="'$auto_domain_climo'"' 'basinshape="'$BASINSHAPE'"'
+ncl plot-climo.ncl 'var="PRECIP"' 'auto_domain_climo="'$auto_domain_climo'"' 'basinshape="'$BASINSHAPE'"'
 
-echo "1996 event comparison"
-python compare-1996-event.py
+echo "Event comparison"
+python compare-event.py
 
 echo "DONE!"
