@@ -5,12 +5,12 @@
 Using the nudged runs:
 
 ```
-start_date=1996-01-01
-end_date=1996-02-01
-lat_min=38.0
-lat_max=45.0
-lon_min=-80.0
-lon_max=-74.0
+start_date=1996-12-15
+end_date=1997-01-15
+MINLAT=32.0
+MAXLAT=43.0
+MINLON=-128.0
+MAXLON=-113.0
 
 data_dir="/storage/home/cmz5202/group/NDG-ne30-ERA5-N58/atm/hist/"
 map_file="/storage/home/cmz5202/work/maps/hyperion/map_ne30np4_to_1.0x1.0_CONUS.nc"
@@ -37,11 +37,13 @@ ncrcat NDG-ne30-ERA5-N58.eam.h5.${start_prev_month}-??-00000.nc \
 ncremap -i E3SM-catted-native.nc -o E3SM-catted-native_regrid.nc -m "$map_file"
 
 # Subset data
-ncks -d time,"$start_date","$end_date" -d lat,$lat_min,$lat_max -d lon,$lon_min,$lon_max E3SM-catted-native_regrid.nc tmp.nc
+ncks -d time,"$start_date","$end_date" -d lat,$MINLAT,$MAXLAT -d lon,$MINLON,$MAXLON E3SM-catted-native_regrid.nc tmp.nc
 
 # Rename and clean up
 mv -v tmp.nc E3SM-catted-native_regrid.v2.nc
 rm -v E3SM-catted-native.nc E3SM-catted-native_regrid.nc
+
+echo "DONE"
 ```
 
 ### L15
@@ -64,6 +66,29 @@ bash NLDAS_process.sh
 ```
 
 ### JRA
+
+```
+# Generate relevant files using JRA code
+cd ~/ncl/projects/snowstorms/process-JRA55-for-RSI/PRECT-SNOW
+./singleyear.sh 1996
+./singleyear.sh 1997
+
+RAWDIR=/Users/cmz5202/NetCDF/ros/JRA/
+start_date=1996-12-15
+end_date=1997-01-15
+MINLAT=32.0
+MAXLAT=43.0
+MINLON=-128.0
+MAXLON=-113.0
+[ $(echo "$MINLON < 0" | bc) -eq 1 ] && MINLON=$(echo "$MINLON + 360" | bc)
+[ $(echo "$MAXLON < 0" | bc) -eq 1 ] && MAXLON=$(echo "$MAXLON + 360" | bc)
+variables=("T2M" "PRECT" "PRECSN" "RHREFHT")
+for var in "${variables[@]}"; do
+  echo $var
+  ncrcat -d time,"$start_date","$end_date" "${RAWDIR}/JRA.h1.1996.${var}.nc" "${RAWDIR}/JRA.h1.1997.${var}.nc" "JRA.h1.${var}.nc"
+  ncks -O -d lat,$MINLAT,$MAXLAT -d lon,$MINLON,$MAXLON "JRA.h1.${var}.nc" "JRA.h1.${var}.nc"
+done
+```
 
 ### obs
 
