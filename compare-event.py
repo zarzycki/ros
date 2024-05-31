@@ -7,12 +7,29 @@ import xarray as xr
 import metpy.calc as mpcalc
 import matplotlib.ticker as ticker
 
-lon_station=-76.8515
-lat_station=40.2171
-event_string='1996-event-srb'
-L15_location='40.28125_-76.90625'
-start_date_str="1996-01-17"
-end_date_str="1996-01-21"
+# lon_station=-76.8515
+# lat_station=40.2171
+# event_string='1996-event-srb'
+# L15_location='40.28125_-76.90625'
+# start_date_str="1996-01-17"
+# end_date_str="1996-01-21"
+# obs_station="CXY"
+
+# lon_station=-123.024444
+# lat_station=44.923056
+# event_string='1996-event-oregon'
+# L15_location='44.90625_-123.03125'
+# start_date_str="1996-02-03"
+# end_date_str="1996-02-10"
+# obs_station="SLE"
+
+lon_station=-121.626111
+lat_station=39.134722
+event_string='1997-event-cali'
+L15_location='39.71875_-121.84375'
+start_date_str="1996-12-30"
+end_date_str="1997-01-06"
+obs_station="MYV"
 
 ############ Automagically get bounds to get nc data
 
@@ -36,9 +53,12 @@ print("Data End Date:", end_date_data)
 ############
 
 ### Load obs data
-obs = pd.read_csv('./netcdf/event-data/'+event_string+'/obs/CXY.csv')
-obstime = pd.to_datetime(obs['valid'],format='%m/%d/%y %H:%M')
+obs = pd.read_csv('./netcdf/event-data/'+event_string+'/obs/'+obs_station+'.csv')
+obstime = pd.to_datetime(obs['valid'], format='%Y-%m-%d %H:%M')
+
+obs['tmpf'] = pd.to_numeric(obs['tmpf'], errors='coerce')
 obsT = ((obs['tmpf'] - 32.) * 5/9) + 273.15
+obsT = obsT.interpolate()
 
 ### L15-VIC data (3-hourly ASCII)
 df2 = pd.read_csv('./netcdf/event-data/'+event_string+'/L15/VIC_subdaily_fluxes_Livneh_CONUSExt_v.1.2_2013_'+L15_location,header=None,delimiter='\t')
@@ -51,9 +71,9 @@ for index, _ in np.ndenumerate(data[:,0]):
     thisdate = datetime.datetime(int(data[index[0],0]), int(data[index[0],1]), int(data[index[0],2]), int(data[index[0],3]))
     masterdatetime.append(thisdate)
 
-# Find start and end indices
-stix = np.where(masterdatetime == np.datetime64(datetime.datetime(1996, 1, 1)))
-enix = np.where(masterdatetime == np.datetime64(datetime.datetime(1996, 1, 30)))
+# Find indices in masterdatetime where the dates match the start and end dates
+stix = np.where(np.array(masterdatetime) == datetime.datetime.strptime(start_date_data, '%Y-%m-%d'))
+enix = np.where(np.array(masterdatetime) == datetime.datetime.strptime(end_date_data, '%Y-%m-%d'))
 stix = stix[0][0]
 enix = enix[0][0]
 
@@ -74,10 +94,10 @@ for i in range(len(L15time)):
 
 ### JRA data
 
-da = xr.open_dataset('./netcdf/event-data/'+event_string+'/JRA/JRA.h1.1996.T2M.nc')
-db = xr.open_dataset('./netcdf/event-data/'+event_string+'/JRA/JRA.h1.1996.PRECT.nc')
-dc = xr.open_dataset('./netcdf/event-data/'+event_string+'/JRA/JRA.h1.1996.PRECSN.nc')
-dd = xr.open_dataset('./netcdf/event-data/'+event_string+'/JRA/JRA.h1.1996.RHREFHT.nc')
+da = xr.open_dataset('./netcdf/event-data/'+event_string+'/JRA/JRA.h1.T2M.nc')
+db = xr.open_dataset('./netcdf/event-data/'+event_string+'/JRA/JRA.h1.PRECT.nc')
+dc = xr.open_dataset('./netcdf/event-data/'+event_string+'/JRA/JRA.h1.PRECSN.nc')
+dd = xr.open_dataset('./netcdf/event-data/'+event_string+'/JRA/JRA.h1.RHREFHT.nc')
 
 da2 = da.sel(lat=lat_station,lon=(360.0 + lon_station),method='nearest')
 da2 = da2.sel(time=slice(start_date_data, end_date_data))
@@ -106,6 +126,7 @@ jratime = da2.time
 # Convert from m/s to mm/h
 jraRAIN = jraRAIN * 1000 * 3600
 jraSNOW = jraSNOW * 1000 * 3600
+
 
 ### E3SM
 
@@ -310,7 +331,7 @@ for ax in axs.flat:
     ax.yaxis.grid(color='lightgray', linestyle='dashed')
     ax.xaxis.grid(color='lightgray', linestyle='dashed')
     ax.set(ylim=(0,4.2))
-    ax.set(xlim=(datetime.date(1996, 1, 17),datetime.date(1996, 1, 21)))
+    ax.set(xlim=(start_date_dt,end_date_dt))
     ax.tick_params(axis='x', labelrotation=90)
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %H''Z'))
 
