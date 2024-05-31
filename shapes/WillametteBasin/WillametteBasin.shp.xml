@@ -1,0 +1,189 @@
+<metadata>
+	<dataqual>
+		<lineage>
+			<procstep>
+				<procdesc>Consolidated Data Basin Info: </procdesc>
+			</procstep>
+		</lineage>
+	</dataqual>
+	<eainfo>
+		<detailed>
+			<attr>
+				<attrlabl>AREAACRES</attrlabl>
+				<attalias>AREAACRES</attalias>
+				<attrdef>AREAACRES</attrdef>
+			</attr>
+			<attr>
+				<attrlabl>AREASQKM</attrlabl>
+				<attalias>AREASQKM</attalias>
+				<attrdef>AREASQKM</attrdef>
+			</attr>
+			<attr>
+				<attrlabl>FID</attrlabl>
+				<attalias>FID</attalias>
+				<attrdef>FID</attrdef>
+			</attr>
+			<attr>
+				<attrlabl>GLOBALID</attrlabl>
+				<attalias>GLOBALID</attalias>
+				<attrdef>GLOBALID</attrdef>
+			</attr>
+			<attr>
+				<attrlabl>GNIS_ID</attrlabl>
+				<attalias>GNIS_ID</attalias>
+				<attrdef>GNIS_ID</attrdef>
+			</attr>
+			<attr>
+				<attrlabl>HUC4</attrlabl>
+				<attalias>HUC4</attalias>
+				<attrdef>HUC4</attrdef>
+			</attr>
+			<attr>
+				<attrlabl>LOADDATE</attrlabl>
+				<attalias>LOADDATE</attalias>
+				<attrdef>LOADDATE</attrdef>
+			</attr>
+			<attr>
+				<attrlabl>METASOURCE</attrlabl>
+				<attalias>METASOURCE</attalias>
+				<attrdef>METASOURCE</attrdef>
+			</attr>
+			<attr>
+				<attrlabl>NAME</attrlabl>
+				<attalias>NAME</attalias>
+				<attrdef>NAME</attrdef>
+			</attr>
+			<attr>
+				<attrlabl>OBJECTID</attrlabl>
+				<attalias>OBJECTID</attalias>
+				<attrdef>OBJECTID</attrdef>
+			</attr>
+			<attr>
+				<attrlabl>Shape</attrlabl>
+				<attalias>Shape</attalias>
+				<attrdef>Shape</attrdef>
+			</attr>
+			<attr>
+				<attrlabl>SHAPE_Area</attrlabl>
+				<attalias>SHAPE_Area</attalias>
+				<attrdef>SHAPE_Area</attrdef>
+			</attr>
+			<attr>
+				<attrlabl>SHAPE_Leng</attrlabl>
+				<attalias>SHAPE_Leng</attalias>
+				<attrdef>SHAPE_Leng</attrdef>
+			</attr>
+			<attr>
+				<attrlabl>SOURCEDATA</attrlabl>
+				<attalias>SOURCEDATA</attalias>
+				<attrdef>SOURCEDATA</attrdef>
+			</attr>
+			<attr>
+				<attrlabl>SOURCEFEAT</attrlabl>
+				<attalias>SOURCEFEAT</attalias>
+				<attrdef>SOURCEFEAT</attrdef>
+			</attr>
+			<attr>
+				<attrlabl>SOURCEORIG</attrlabl>
+				<attalias>SOURCEORIG</attalias>
+				<attrdef>SOURCEORIG</attrdef>
+			</attr>
+			<attr>
+				<attrlabl>STATES</attrlabl>
+				<attalias>STATES</attalias>
+				<attrdef>STATES</attrdef>
+			</attr>
+			<attr>
+				<attrlabl>TNMID</attrlabl>
+				<attalias>TNMID</attalias>
+				<attrdef>TNMID</attrdef>
+			</attr>
+		</detailed>
+	</eainfo>
+	<idinfo>
+		<descript>
+			<abstract>The Willamette Basin boundary was selected from the HUC 4 boundaries within the USGS Watershed Boundary Dataset.  More information about the WBD can be found at:  https://nhd.usgs.gov/wbd.html</abstract>
+		</descript>
+		<useconst>This work is licensed under a  Creative Commons Attribution 3.0 License.</useconst>
+		<keywords>
+			<theme>
+				<themekey>willamette basin,willamette,watershed,oregon</themekey>
+			</theme>
+		</keywords>
+		<citation>
+			<citeinfo>
+				<onlink>https://databasin.org/datasets/3fcafe2eb73a4db19f6ee05c894def4c</onlink>
+				<title>Willamette Basin, Oregon</title>
+				<origin>Derived from the USGS Watershed Boundary Datasethttps://nhd.usgs.gov/wbd.html</origin>
+			</citeinfo>
+		</citation>
+		<spdom>
+			<bounding>
+				<southbc>5366316.9853</southbc>
+				<northbc>5770946.0638</northbc>
+				<eastbc>-13542171.1927</eastbc>
+				<westbc>-13776735.0137</westbc>
+			</bounding>
+		</spdom>
+	</idinfo>
+	<distinfo>
+		<distliab>No warranty is made by Data Basin for use of this dataset.  No warranty is made by Data Basin regarding the accuracy, reliability, or completeness of this dataset. In no event shall Data Basin have any liability whatsoever for payment of any consequential, incidental, indirect, special, or tort damages of any kind, including, but not limited to, any loss of profits arising out of the use or reliance on the geographic or attribute data contained within this dataset or arising out of the delivery, installation, operation, or support by Data Basin.</distliab>
+		<techpreq>Desktop GIS software.</techpreq>
+		<stdorder>
+			<digform>
+				<digtopt>
+					<onlinopt>
+						<accinstr>Download from https://databasin.org</accinstr>
+						<computer>
+							<networka>
+								<networkr>https://databasin.org/datasets/3fcafe2eb73a4db19f6ee05c894def4c</networkr>
+							</networka>
+						</computer>
+					</onlinopt>
+				</digtopt>
+				<digtinfo>
+					<filedec>No compression applied</filedec>
+					<formvern>ArcGIS 10</formvern>
+					<formspec>Feature Layer</formspec>
+					<formname>Feature Layer</formname>
+				</digtinfo>
+			</digform>
+			<ordering>Download from https://databasin.org</ordering>
+			<fees>None</fees>
+		</stdorder>
+		<distrib>
+			<cntinfo>
+				<cntvoice>541-757-0687</cntvoice>
+				<cntemail>databasin_admin@consbio.org</cntemail>
+				<cntperp>
+					<cntorg>Data Basin</cntorg>
+					<cntper>Data Basin Administrator</cntper>
+				</cntperp>
+				<cntaddr>
+					<country>USA</country>
+					<city>Corvallis</city>
+					<postal>97333</postal>
+					<address>136 SW Washington Ave, Suite 202</address>
+					<addrtype>physical address</addrtype>
+					<state>OR</state>
+				</cntaddr>
+			</cntinfo>
+		</distrib>
+	</distinfo>
+	<Esri>
+		<CreaDate>20170613</CreaDate>
+		<CreaTime>05535600</CreaTime>
+		<SyncOnce>TRUE</SyncOnce>
+		<DataProperties>
+			<itemProps>
+				<itemLocation>
+					<linkage Sync="TRUE">file://C:\windows\temp\tmpk6rj8u\3fcafe2eb73a4db19f6ee05c894def4c\commondata\mmt_willametteinitiative\WillametteBasin</linkage>
+					<protocol Sync="TRUE">Local Area Network</protocol>
+				</itemLocation>
+			</itemProps>
+			<copyHistory>
+				<copy source="C:\windows\temp\tmpk6rj8u\commondata\mmt_willametteinitiative\WillametteBasin" dest="C:\windows\temp\tmpk6rj8u\3fcafe2eb73a4db19f6ee05c894def4c\commondata\mmt_willametteinitiative\WillametteBasin" date="20170613" time="05535600"/>
+			</copyHistory>
+		</DataProperties>
+	</Esri>
+</metadata>
