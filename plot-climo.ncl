@@ -16,12 +16,15 @@ f2 = addfile("./netcdf/"+models(1)+"_1985to2005_masked.nc","r")
 f3 = addfile("./netcdf/"+models(2)+"_1985to2005_masked.nc","r")
 f4 = addfile("./netcdf/"+models(3)+"_1985to2005_masked.nc","r")
 
-shpfilename="./shapes/srb/srb.shp"
+shpfilename="./shapes/"+basinshape+"/"+basinshape+".shp"
 shp = addfile(shpfilename,"r")
 
 ; settings
 ;var="ROF"
 winter_only=True
+
+; print units next to colorbar?
+colorbar_units=True
 
 ;debugging
 check_L15=False
@@ -305,9 +308,15 @@ res@tmYRLabelFontHeightF  =tickHeight
 
 res@gsnLeftString = var
 if (var .eq. "SWE") then
-  res@gsnRightString = "mm"
+  these_units="mm"
 else
-  res@gsnRightString = "mm/day"
+  these_units="mm/day"
+end if
+
+if (colorbar_units) then
+  res@gsnRightString = ""
+else
+  res@gsnRightString = these_units
 end if
 
 res@gsnCenterString = models(0)
@@ -327,14 +336,14 @@ plot(3) = gsn_csm_contour_map(wks,rof4_avg,res)
 
 plres = True
 plres@gsLineColor = "black"
-plres@gsLineThicknessF = 3.0
+plres@gsLineThicknessF = 2.0
 x = shp->x
 y = shp->y
 
-lines_id0 = gsn_add_polyline(wks,plot(0),y,x,plres)
-lines_id1 = gsn_add_polyline(wks,plot(1),y,x,plres)
-lines_id2 = gsn_add_polyline(wks,plot(2),y,x,plres)
-lines_id3 = gsn_add_polyline(wks,plot(3),y,x,plres)
+lines_id0 = gsn_add_polyline(wks,plot(0),x,y,plres)
+lines_id1 = gsn_add_polyline(wks,plot(1),x,y,plres)
+lines_id2 = gsn_add_polyline(wks,plot(2),x,y,plres)
+lines_id3 = gsn_add_polyline(wks,plot(3),x,y,plres)
 
 txres=True
 txres@txBackgroundFillColor = "White"
@@ -364,6 +373,14 @@ resP                     = True                ; modify the panel plot
 
 resP@gsnPanelLabelBar    = True
 resP@lbLabelFontHeightF  = 0.012
+
+if (colorbar_units) then
+  resP@lbTitleString = these_units
+  resP@lbTitlePosition  = "Right"              ; title position
+  resP@lbTitleFontHeightF= .0135                ; make title smaller
+  resP@lbTitleDirection = "Across"             ; title direction
+  resP@lbTitleExtentF = 0.005
+end if
 
 ;resP@gsnPanelXF = (/-1,0.59/)
 resP@amJust = "TopLeft"
