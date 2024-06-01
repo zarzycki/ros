@@ -41,9 +41,9 @@ df = raw_df
 
 sub_df = df[df['Thresh'] == which_thresh]
 
-varlist = ['st_swe','wt_rof','pt_pre','Event Length', 'Average dSWE', 'Max dSWE', 'Average Runoff', 'Max Runoff', 'Average Precip', 'Max Precip']
-labellist = ['st_swe','wt_rof','pt_pre','Event Length', 'Average dSWE', 'Max dSWE', 'Average ROF', 'Max ROF', 'Average PRECIP', 'Max PRECIP']
-xaxislist = ['st_swe','wt_rof','pt_pre','Event Length', 'SWE change', 'SWE change', 'Runoff', 'Runoff', 'Precipitation', 'Precipitation']
+varlist = ['st_swe','wt_rof','pt_pre','Event Length', 'Average dSWE', 'Max dSWE', 'Average Runoff', 'Max Runoff', 'Average Precip', 'Max Precip', 'Average fSWE', 'Max fSWE',]
+labellist = ['st_swe','wt_rof','pt_pre','Event Length', 'Average dSWE', 'Max dSWE', 'Average ROF', 'Max ROF', 'Average PRECIP', 'Max PRECIP', 'Average fSWE', 'Max fSWE',]
+xaxislist = ['st_swe','wt_rof','pt_pre','Event Length', 'SWE change', 'SWE change', 'Runoff', 'Runoff', 'Precipitation', 'Precipitation', 'Average fSWE', 'Max fSWE',]
 
 length_written=False
 thresh_written=False
