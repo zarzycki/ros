@@ -4,8 +4,11 @@ import pandas as pd
 import xarray as xr
 import scipy.stats as stats
 import os
+import sys
 
-OUTPUTDIR="./corr_stats/"
+basin_shape=str(sys.argv[1]) # What is the basin flag?
+
+OUTPUTDIR="./output/"+basin_shape+"/corr_stats/"
 PRINT_ALL_MATRICES=True  ## Print other offsets to verify nothing is +/- 1 day, etc.
 #-------
 

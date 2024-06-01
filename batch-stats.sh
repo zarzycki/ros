@@ -28,11 +28,10 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+OUTPUTDIR="./output/$BASINSHAPE/"
+
 if [ "$force_purge" == "true" ]; then
-  rm -vrf output/*
-  rm -vrf climo/*
-  rm -vrf corr_stats/*
-  rm -vrf hists/*
+  rm -vrf $OUTPUTDIR
 fi
 
 set -e # Turn on error checking
@@ -40,14 +39,14 @@ set -e # Turn on error checking
 if [ "$perform_analysis" == "true" ]; then
   echo "Doing analysis..."
   analyses=(
-    "L15 -1 $USGS_gauge"
-    "NLDAS -1 $USGS_gauge"
-    "JRA -1 $USGS_gauge"
-    "E3SM -1 $USGS_gauge"
-    "L15 95 $USGS_gauge"
-    "NLDAS 95 $USGS_gauge"
-    "JRA 95 $USGS_gauge"
-    "E3SM 95 $USGS_gauge"
+    "L15 -1 $USGS_gauge $BASINSHAPE"
+    "NLDAS -1 $USGS_gauge $BASINSHAPE"
+    "JRA -1 $USGS_gauge $BASINSHAPE"
+    "E3SM -1 $USGS_gauge $BASINSHAPE"
+    "L15 95 $USGS_gauge $BASINSHAPE"
+    "NLDAS 95 $USGS_gauge $BASINSHAPE"
+    "JRA 95 $USGS_gauge $BASINSHAPE"
+    "E3SM 95 $USGS_gauge $BASINSHAPE"
   )
 
   run_analysis() {
@@ -68,15 +67,15 @@ if [ "$perform_analysis" == "true" ]; then
 fi
 
 echo "Organizing statistics"
-cd output
+pushd "$OUTPUTDIR/csv/"
 rm -vf supercat.csv
 cat Events_*csv > supercat.TMP
 mv -v supercat.TMP supercat.csv
-cd ..
+popd
 
 if [ "$merge_pngs" == "true" ]; then
   echo "Creating merged PNGs"
-  cd output
+  pushd "$OUTPUTDIR/annual_plots/"
 
   figtypes=("SWE" "events" "scatplot")
 
@@ -109,21 +108,21 @@ if [ "$merge_pngs" == "true" ]; then
     parallel merge_png ::: {1984..2005} ::: "${figtypes[@]}"
   fi
 
-  cd ..
+  popd
 fi
 
 echo "Checking correlations"
-python check_correlations.py
-cd corr_stats
+python check_correlations.py $BASINSHAPE
+pushd "$OUTPUTDIR/corr_stats"
 cat *offonee3smcorr.csv > corr_catted.csv
-cd ..
+popd
 
 echo "Creating histograms"
-python histograms.py '-1.0'
-python histograms.py '95.0'
+python histograms.py '-1.0' $BASINSHAPE
+python histograms.py '95.0' $BASINSHAPE
 
 echo "Computing annual stats"
-python annual_stats.py
+python annual_stats.py $BASINSHAPE
 
 echo "NCL plotting"
 ncl plot-climo.ncl 'var="SWE"' 'auto_domain_climo="'$auto_domain_climo'"' 'basinshape="'$BASINSHAPE'"'
@@ -132,6 +131,6 @@ ncl plot-climo.ncl 'var="ROF"' 'auto_domain_climo="'$auto_domain_climo'"' 'basin
 ncl plot-climo.ncl 'var="PRECIP"' 'auto_domain_climo="'$auto_domain_climo'"' 'basinshape="'$BASINSHAPE'"'
 
 echo "Event comparison"
-python compare-event.py
+python compare-event.py $BASINSHAPE
 
 echo "DONE!"

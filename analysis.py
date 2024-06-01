@@ -16,6 +16,7 @@ print ("The arguments are: " , str(sys.argv))
 model = sys.argv[1]  #E3SM, JRA, L15, NLDAS
 percFilter=float(sys.argv[2])  # -1.  (95.)  ## Do we want to filter on a particular threshold?
 usgs_station_id=str(sys.argv[3]) # What is the txt to the gauge string?
+basin_shape=str(sys.argv[4]) # What is the basin flag?
 
 ## For now defaults
 wt = 1.4; st = 1.4; pt = 2.0; ft = 0.2  #wt = ROF threshold, st = SWE threshold, #pt = Precip rate threshold, #ft = dSWE frac thresh
@@ -28,7 +29,7 @@ plot_streams=True
 debug_verbose=False
 
 ## Essentially hardcoded...
-outputdir="./output"
+outputdir="./output/"+basin_shape
 
 ############## DO NOT EDIT BELOW THIS LINE
 
@@ -95,16 +96,20 @@ eventdf['st_swe'] = st
 eventdf['pt_pre'] = pt
 eventdf['ft_fsw'] = ft
 
-## If output subdir doesn't exist, create it.
+## If output subdirs don't exist, create them.
 if not os.path.exists(outputdir):
     os.makedirs(outputdir)
+if not os.path.exists(outputdir+'/annual_plots/'):
+    os.makedirs(outputdir+'/annual_plots/')
+if not os.path.exists(outputdir+'/csv/'):
+    os.makedirs(outputdir+'/csv/')
 
 ## Write events to CSV
 if percFilter > 0.0:
     perclabel = str(int(percFilter))
 else:
     perclabel = "AB"
-eventdf.to_csv(outputdir+"/Events_"+model+"_"+startyear+"to"+endyear+"_"+perclabel+".csv")
+eventdf.to_csv(outputdir+"/csv/Events_"+model+"_"+startyear+"to"+endyear+"_"+perclabel+".csv")
 
 add_panels=False
 panel_labels = {'L15': 'a.', 'NLDAS': 'b.', 'JRA': 'c.', 'E3SM': 'd.'}
@@ -168,7 +173,7 @@ if percFilter > 0.0:
             ax.text(0.02, 0.95, panel_label, transform=ax.transAxes, fontsize=30, fontweight='bold', va='top')
 
         plt.tight_layout()
-        fig.savefig(outputdir+"/"+model+"_"+str(year)+"_events.pdf", bbox_inches='tight')
+        fig.savefig(outputdir+"/annual_plots/"+model+"_"+str(year)+"_events.pdf", bbox_inches='tight')
         '''
         This creates a time series plot of dSWE, runoff, and precipitation for each water year in the dataset, along
         with a red rectangle highlighting each flagged event. This helps to identify the signatures associated with
@@ -181,7 +186,7 @@ if percFilter > 0.0:
         counter = counter+1
 
     #print(sum_swe)
-    np.savetxt(outputdir+"/"+model+"_yearly_total_SWE.csv", sum_swe, delimiter=",")
+    np.savetxt(outputdir+"/csv/"+model+"_yearly_total_SWE.csv", sum_swe, delimiter=",")
 
     #### ---> Plots of yearly SWE evolution with shaded events
 
@@ -215,7 +220,7 @@ if percFilter > 0.0:
             ax.text(0.02, 0.95, panel_label, transform=ax.transAxes, fontsize=30, fontweight='bold', va='top')
 
         plt.tight_layout()
-        fig.savefig(outputdir+"/"+model+"_"+str(year)+"_SWE.pdf", bbox_inches='tight')
+        fig.savefig(outputdir+"/annual_plots/"+model+"_"+str(year)+"_SWE.pdf", bbox_inches='tight')
 
         plt.close()
 
@@ -286,7 +291,7 @@ if percFilter > 0.0:
                 ax.text(0.02, 0.95, panel_label, transform=ax.transAxes, fontsize=30, fontweight='bold', va='top')
 
             plt.tight_layout()
-            fig.savefig(outputdir+"/"+model+"_"+str(year)+"_scatplot.pdf", bbox_inches='tight')
+            fig.savefig(outputdir+"/annual_plots/"+model+"_"+str(year)+"_scatplot.pdf", bbox_inches='tight')
             plt.close()
 
 print("... DONE!")

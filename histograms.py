@@ -11,17 +11,15 @@ def to_percentage(x, pos):
     return f"{x * 100:.0f}"
 
 which_thresh=sys.argv[1]
+basin_shape=str(sys.argv[2]) # What is the basin flag?
 
 print(which_thresh)
 
-csv_file = "./output/supercat.csv"
-
-#which_thresh='-1.0'
-#which_thresh='95.0'
-
 ## Essentially hardcoded...
-outputdir="./output/"
-histdir = "./hists/"
+outputdir="./output/"+basin_shape+"/"
+histdir = outputdir+"/hists/"
+
+csv_file = outputdir+"/csv/supercat.csv"
 
 # Figure out how to label output
 if float(which_thresh) > 0.0:
@@ -89,7 +87,7 @@ for var in varlist:
 print(outdf)
 
 ## Write stats to CSV
-outdf.to_csv(outputdir+"/table_stats_"+perclabel+".csv")
+outdf.to_csv(outputdir+"/csv/table_stats_"+perclabel+".csv")
 
 ##### Plotting
 

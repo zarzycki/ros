@@ -6,33 +6,45 @@ import numpy as np
 import xarray as xr
 import metpy.calc as mpcalc
 import matplotlib.ticker as ticker
+import sys
+import os
 
-lon_station=-76.8515
-lat_station=40.2171
-event_string='1996-event-srb'
-L15_location='40.28125_-76.90625'
-start_date_str="1996-01-17"
-end_date_str="1996-01-21"
-obs_station="CXY"
-interpolate_obs_T=True
+basin_shape=str(sys.argv[1]) # What is the basin flag?
+OUTDIR="./output/"+basin_shape+"/"
 
-# lon_station=-123.024444
-# lat_station=44.923056
-# event_string='1996-event-oregon'
-# L15_location='44.90625_-123.03125'
-# start_date_str="1996-02-03"
-# end_date_str="1996-02-10"
-# obs_station="SLE"
-# interpolate_obs_T=True
+if basin_shape == 'srb':
+    lon_station=-76.8515
+    lat_station=40.2171
+    event_string='1996-event-srb'
+    L15_location='40.28125_-76.90625'
+    start_date_str="1996-01-17"
+    end_date_str="1996-01-21"
+    obs_station="CXY"
+    interpolate_obs_T=True
+elif basin_shape == 'WillametteBasin':
+    lon_station=-123.024444
+    lat_station=44.923056
+    event_string='1996-event-oregon'
+    L15_location='44.90625_-123.03125'
+    start_date_str="1996-02-03"
+    end_date_str="1996-02-10"
+    obs_station="SLE"
+    interpolate_obs_T=True
+elif basin_shape == 'SacRB_USGS1802':
+    lon_station=-121.626111
+    lat_station=39.134722
+    event_string='1997-event-cali'
+    L15_location='39.71875_-121.84375'
+    start_date_str="1996-12-30"
+    end_date_str="1997-01-06"
+    obs_station="MYV"
+    interpolate_obs_T=True
+else:
+    print("invalid basin")
+    quit()
 
-# lon_station=-121.626111
-# lat_station=39.134722
-# event_string='1997-event-cali'
-# L15_location='39.71875_-121.84375'
-# start_date_str="1996-12-30"
-# end_date_str="1997-01-06"
-# obs_station="MYV"
-# interpolate_obs_T=True
+if not os.path.exists(OUTDIR+'/event-level/'):
+    os.makedirs(OUTDIR+'/event-level/')
 
 ############ Automagically get bounds to get nc data
 
@@ -202,7 +214,7 @@ left = datetime.datetime.strptime(start_date_str, '%Y-%m-%d').date()
 right = datetime.datetime.strptime(end_date_str, '%Y-%m-%d').date()
 plt.gca().set_xbound(left, right)
 
-plt.savefig("./output/timeseries_T_event.pdf", format="pdf", bbox_inches="tight")
+plt.savefig(OUTDIR+"/event-level/timeseries_T_event.pdf", format="pdf", bbox_inches="tight")
 
 
 
@@ -361,5 +373,5 @@ ax01_2.spines["right"].set_visible(True)
 ax11_2.spines["right"].set_position(("axes", shift_dist))
 ax11_2.spines["right"].set_visible(True)
 
-plt.savefig("./output/precip_vs_t.pdf", format="pdf", bbox_inches="tight")
+plt.savefig(OUTDIR+"/event-level/precip_vs_t.pdf", format="pdf", bbox_inches="tight")
 

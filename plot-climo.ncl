@@ -224,9 +224,10 @@ else
   print("max for plotting: "+max_for_plotting)
 end if
 
-system("mkdir -p ./climo")
+output_directory="./output/"+basinshape+"/climo"
+system("mkdir -p "+output_directory)
 
-wks = gsn_open_wks("pdf","./climo/climo_comp_panel_"+var)              ; send graphics to PNG file
+wks = gsn_open_wks("pdf",output_directory+"/climo_comp_panel_"+var)              ; send graphics to PNG file
 
 plot = new(4,graphic)                          ; create a plot array
 
