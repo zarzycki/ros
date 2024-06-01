@@ -154,15 +154,15 @@ for var in varlist:
         ax.set_xlim(global_min, global_max)  # Set consistent x-axis limits
         ax.set_ylim(global_y_min, global_y_max)  # Set consistent x-axis limits
 
-        print(f"{label} y-axis limits before tick adjustment: {ax.get_ylim()}")
+        #print(f"{label} y-axis limits before tick adjustment: {ax.get_ylim()}")
 
         # Customize y-ticks to add a buffer
         y_ticks = np.arange(global_y_min, global_y_max + ytick_step_size, ytick_step_size)
-        y_tick_labels = ['' if i == 0 or i == len(y_ticks) - 1 else f"{tick:.2f}" for i, tick in enumerate(y_ticks)]
+        y_tick_labels = ['' if i == 0 or i == len(y_ticks) - 1 else f"{tick:.1f}" for i, tick in enumerate(y_ticks)]
         ax.set_yticks(y_ticks)
         ax.set_yticklabels(y_tick_labels)
 
-        print(f"{label} y-axis limits after tick adjustment: {ax.get_ylim()}")
+        #print(f"{label} y-axis limits after tick adjustment: {ax.get_ylim()}")
 
         # Add light gray grid lines
         ax.grid(axis='y', color='lightgray', linestyle='--', linewidth=0.7, zorder=0)
@@ -180,7 +180,7 @@ for var in varlist:
         axs[-1].set_xlabel(xaxislist[ii] + " (mm/day)")
 
     # Add a single y-label to the figure
-    fig.text(0.04, 0.5, 'PDF (%)', va='center', ha='center', rotation='vertical')
+    fig.text(0.06, 0.5, 'PDF (%)', va='center', ha='center', rotation='vertical')
 
     plttitle = plt.suptitle(labellist[ii])
     plttitle.set_position(title_position)
@@ -204,17 +204,20 @@ x_pos = [i for i, _ in enumerate(x)]
 
 plt.figure(figsize=figsize)
 
-plt.bar(x_pos, events, color=('black','orange','mediumslateblue','lightskyblue'))
+plt.bar(x_pos, events, color=('black','orange','mediumslateblue','lightskyblue'), zorder=10)
 
 plt.xticks(x_pos, x)
 
 plttitle = plt.suptitle("Events")
 plttitle.set_position(title_position)
 
-plt.ylabel("Number events")
+plt.ylabel("Number events", labelpad=5)  # Adjust labelpad to move the y-axis label further away
 plt.xlabel("Data Product")
 
-#plt.show()
+# Get the current axes and plot grid lines
+ax = plt.gca()
+ax.grid(axis='y', color='lightgray', linestyle='--', linewidth=0.7, zorder=0)
+
 newstr="events"
 plt.savefig(histdir+"/"+newstr+"_"+perclabel+".pdf")
 plt.close()
