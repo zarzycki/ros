@@ -64,25 +64,61 @@ for var in varlist:
         print(len(x2))
         print(len(x3))
         print(len(x4))
-        length_written=True
-        tmpdf = pd.DataFrame(data=[len(x1),len(x2),len(x3),len(x4)], index=columns, columns=['Num'])
-        outdf = pd.concat([outdf,tmpdf],axis=1)
+        length_written = True
+        tmpdf = pd.DataFrame(data=[len(x1), len(x2), len(x3), len(x4)], index=columns, columns=['Num'])
+        outdf = pd.concat([outdf, tmpdf], axis=1)
 
     print(var)
     if var == 'wt_rof':
-        print(x1[0])
-        print(x2[0])
-        print(x3[0])
-        print(x4[0])
-    else:
-        print(x1.mean())
-        print(x2.mean())
-        print(x3.mean())
-        print(x4.mean())
+        if len(x1) > 0:
+            print(x1[0])
+        else:
+            print("x1 is empty")
 
-    #Create tmpdf
-    tmpdf = pd.DataFrame(data=[x1.mean(),x2.mean(),x3.mean(),x4.mean()], index=columns, columns=[var])
-    outdf = pd.concat([outdf,tmpdf],axis=1)
+        if len(x2) > 0:
+            print(x2[0])
+        else:
+            print("x2 is empty")
+
+        if len(x3) > 0:
+            print(x3[0])
+        else:
+            print("x3 is empty")
+
+        if len(x4) > 0:
+            print(x4[0])
+        else:
+            print("x4 is empty")
+    else:
+        if len(x1) > 0:
+            print(x1.mean())
+        else:
+            print("x1 is empty")
+
+        if len(x2) > 0:
+            print(x2.mean())
+        else:
+            print("x2 is empty")
+
+        if len(x3) > 0:
+            print(x3.mean())
+        else:
+            print("x3 is empty")
+
+        if len(x4) > 0:
+            print(x4.mean())
+        else:
+            print("x4 is empty")
+
+    # Create tmpdf
+    data = [
+        x1.mean() if len(x1) > 0 else float('nan'),
+        x2.mean() if len(x2) > 0 else float('nan'),
+        x3.mean() if len(x3) > 0 else float('nan'),
+        x4.mean() if len(x4) > 0 else float('nan')
+    ]
+    tmpdf = pd.DataFrame(data=data, index=columns, columns=[var])
+    outdf = pd.concat([outdf, tmpdf], axis=1)
 
 print(outdf)
 
@@ -115,28 +151,33 @@ for var in varlist:
         x3[x3 < 0] = 0
         x4[x4 < 0] = 0
 
-    # Determine global min/max for x-axis
-    global_min = float('inf')
-    global_max = float('-inf')
-    global_min = min(global_min, x1.min(), x2.min(), x3.min(), x4.min())
-    global_max = max(global_max, x1.max(), x2.max(), x3.max(), x4.max())
+    datasets = [x1, x2, x3, x4]
+    non_empty_datasets = [dataset for dataset in datasets if len(dataset) > 0]
+
+    if not non_empty_datasets:
+        print(f"All datasets are empty for variable: {var}")
+        continue
+
+    # Determine global min and max for x-axis
+    global_min = min(dataset.min() for dataset in non_empty_datasets)
+    global_max = max(dataset.max() for dataset in non_empty_datasets)
+
     if global_min == global_max:
         global_min -= 0.1
         global_max += 0.1
     bin_edges = np.linspace(global_min, global_max, NBINS + 1)
 
-    # Determine global min/max for y-axis
+    # Determine global min and max for y-axis
     global_y_min = 0.0
     global_y_max = float('-inf')
-    datasets = [x1, x2, x3, x4]
-    for dataset in datasets:
+    for dataset in non_empty_datasets:
         weights = np.ones_like(dataset) / len(dataset)
         hist, _ = np.histogram(dataset, bins=bin_edges, weights=weights)
         global_y_max = max(global_y_max, hist.max())
     if global_y_min == global_y_max:
         global_y_max += 0.1
-    global_y_max = global_y_max#+0.05
-    print('global_y_max ',global_y_max)
+    global_y_max = global_y_max * 1.05
+    print('global_y_max', global_y_max)
 
     fig = plt.figure(figsize=figsize)
     gs = fig.add_gridspec(4, hspace=0)  # No vertical space between subplots
