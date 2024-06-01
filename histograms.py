@@ -41,9 +41,9 @@ df = raw_df
 
 sub_df = df[df['Thresh'] == which_thresh]
 
-varlist = ['st_swe','wt_rof','pt_pre','Event Length', 'Average dSWE', 'Max dSWE', 'Average Runoff', 'Max Runoff', 'Average Precip', 'Max Precip', 'Average fSWE', 'Max fSWE',]
-labellist = ['st_swe','wt_rof','pt_pre','Event Length', 'Average dSWE', 'Max dSWE', 'Average ROF', 'Max ROF', 'Average PRECIP', 'Max PRECIP', 'Average fSWE', 'Max fSWE',]
-xaxislist = ['st_swe','wt_rof','pt_pre','Event Length', 'SWE change', 'SWE change', 'Runoff', 'Runoff', 'Precipitation', 'Precipitation', 'Average fSWE', 'Max fSWE',]
+varlist = ['st_swe','wt_rof','pt_pre','Event Length', 'Average dSWE', 'Max dSWE', 'Average Runoff', 'Max Runoff', 'Average Precip', 'Max Precip', 'Average fSWE', 'Max fSWE']
+labellist = ['st_swe','wt_rof','pt_pre','Event Length', 'Average dSWE', 'Max dSWE', 'Average ROF', 'Max ROF', 'Average PRECIP', 'Max PRECIP', 'Average fSWE', 'Max fSWE']
+xaxislist = ['st_swe','wt_rof','pt_pre','Event Length', 'SWE change', 'SWE change', 'Runoff', 'Runoff', 'Precipitation', 'Precipitation', 'Average fSWE', 'Max fSWE']
 
 length_written=False
 thresh_written=False
@@ -98,13 +98,12 @@ figsize = (6.5, 5)            # Leave as constant to format panels in LaTeX corr
 title_position = [0.5, 0.92]  # If the second number is smaller, title is moved "down" y-axis
 
 ###-----> Write out histograms of various statistical variables
+NBINS = 8
+ytick_step_size = 0.2     # Set step size for even number ticks
 
 ii=0 # Iteration integer for getting labellist
 for var in varlist:
-
     print(var)
-
-    NBINS=8
 
     x1 = sub_df.loc[df['Dataset'] == 'L15'][var].values.astype(float)
     x2 = sub_df.loc[df['Dataset'] == 'NLDAS'][var].values.astype(float)
@@ -118,42 +117,79 @@ for var in varlist:
         x3[x3 < 0] = 0
         x4[x4 < 0] = 0
 
-    #kwargs = dict(histtype='stepfilled', alpha=0.3, density=True, bins=6, ec="k", linewidth=2.0)
+    # Determine global min/max for x-axis
+    global_min = float('inf')
+    global_max = float('-inf')
+    global_min = min(global_min, x1.min(), x2.min(), x3.min(), x4.min())
+    global_max = max(global_max, x1.max(), x2.max(), x3.max(), x4.max())
+    if global_min == global_max:
+        global_min -= 0.1
+        global_max += 0.1
+    bin_edges = np.linspace(global_min, global_max, NBINS + 1)
 
-    kwargs = dict(histtype='step', bins=NBINS, alpha=0.75)
+    # Determine global min/max for y-axis
+    global_y_min = 0.0
+    global_y_max = float('-inf')
+    datasets = [x1, x2, x3, x4]
+    for dataset in datasets:
+        weights = np.ones_like(dataset) / len(dataset)
+        hist, _ = np.histogram(dataset, bins=bin_edges, weights=weights)
+        global_y_max = max(global_y_max, hist.max())
+    if global_y_min == global_y_max:
+        global_y_max += 0.1
+    global_y_max = global_y_max#+0.05
+    print('global_y_max ',global_y_max)
 
-    plt.figure(figsize=figsize)
+    fig = plt.figure(figsize=figsize)
+    gs = fig.add_gridspec(4, hspace=0)  # No vertical space between subplots
+    axs = gs.subplots(sharex=True)
+    datasets = {'L15': x1, 'NLDAS': x2, 'JRA': x3, 'E3SM': x4}
+    colors = ['mediumslateblue', 'lightskyblue', 'orange', 'black']
 
-    weights = np.ones_like(x1) / len(x1)
-    plt.hist(x1, **kwargs, weights=weights, linewidth=2.9, color='mediumslateblue', label="L15" )
+    for ax, (dataset, color, label) in zip(axs, zip(datasets.values(), colors, datasets.keys())):
+        weights = np.ones_like(dataset) / len(dataset)
+        ax.hist(dataset, histtype='bar', bins=bin_edges, alpha=0.95, weights=weights, color=color, label=label, zorder=10)
+        #ax.set_ylabel("PDF (%)")
+        ax.legend(loc="upper right")
+        ax.set_xlim(global_min, global_max)  # Set consistent x-axis limits
+        ax.set_ylim(global_y_min, global_y_max)  # Set consistent x-axis limits
 
-    weights = np.ones_like(x2) / len(x2)
-    plt.hist(x2, **kwargs, weights=weights, linewidth=2.3, color='lightskyblue', label="NLDAS" )
+        print(f"{label} y-axis limits before tick adjustment: {ax.get_ylim()}")
 
-    weights = np.ones_like(x3) / len(x3)
-    plt.hist(x3, **kwargs, weights=weights, linewidth=1.7, color='orange', label="JRA" )
+        # Customize y-ticks to add a buffer
+        y_ticks = np.arange(global_y_min, global_y_max + ytick_step_size, ytick_step_size)
+        y_tick_labels = ['' if i == 0 or i == len(y_ticks) - 1 else f"{tick:.2f}" for i, tick in enumerate(y_ticks)]
+        ax.set_yticks(y_ticks)
+        ax.set_yticklabels(y_tick_labels)
 
-    weights = np.ones_like(x4) / len(x4)
-    plt.hist(x4, **kwargs, weights=weights, linewidth=1.0, color='black', label="E3SM" )
+        print(f"{label} y-axis limits after tick adjustment: {ax.get_ylim()}")
 
-    plt.legend(loc="upper right")
+        # Add light gray grid lines
+        ax.grid(axis='y', color='lightgray', linestyle='--', linewidth=0.7, zorder=0)
+
+    # Convert CDF units to percentage (i.e., 0.3 -> 30)
+    #formatter = FuncFormatter(to_percentage)
+    #plt.gca().yaxis.set_major_formatter(formatter)
+
+    # Set x-axes
+    if var == 'Event Length':
+        axs[-1].set_xlabel(xaxislist[ii] + " (days)")
+    elif var == 'Average fSWE' or var == 'Max fSWE':
+        axs[-1].set_xlabel(xaxislist[ii] + " (fraction)")
+    else:
+        axs[-1].set_xlabel(xaxislist[ii] + " (mm/day)")
+
+    # Add a single y-label to the figure
+    fig.text(0.04, 0.5, 'PDF (%)', va='center', ha='center', rotation='vertical')
 
     plttitle = plt.suptitle(labellist[ii])
     plttitle.set_position(title_position)
 
-    # Convert CDF units to percentage (i.e., 0.3 -> 30)
-    formatter = FuncFormatter(to_percentage)
-    plt.gca().yaxis.set_major_formatter(formatter)
-
-    plt.ylabel("PDF (%)")
-    plt.xlabel(xaxislist[ii]+" (mm/day)")
-
-    #plt.show()
-    newstr=var.replace(" ", "_")  # replace any spaces with underlines for filenaming
-    plt.savefig(histdir+"/"+newstr+"_"+perclabel+".pdf")
+    newstr = var.replace(" ", "_")  # replace any spaces with underlines for filenaming
+    plt.savefig(histdir + "/" + newstr + "_" + perclabel + ".pdf")
     plt.close()
 
-    ii=ii+1   # update iter at end of loop for next one
+    ii += 1  # update iter at end of loop for next one
 
 ###-----> Write out single histogram
 
