@@ -4,6 +4,8 @@ begin
 
 models = (/"L15","NLDAS","JRA","E3SM"/)
 
+use_max_for_plotting=False
+
 if (isvar("auto_domain_climo") .and. str_lower(auto_domain_climo) .eq. "true") then
   get_plot_domain_from_f1=True
 else
@@ -208,6 +210,20 @@ print("min: "+min(rof2_avg)+"   max: "+max(rof2_avg)+"     mean: "+avg(rof2_avg)
 print("min: "+min(rof3_avg)+"   max: "+max(rof3_avg)+"     mean: "+avg(rof3_avg)+"     wgt_avg: "+rof3_avg_avg)
 print("min: "+min(rof4_avg)+"   max: "+max(rof4_avg)+"     mean: "+avg(rof4_avg)+"     wgt_avg: "+rof4_avg_avg)
 
+if (var .eq. "dSWE") then
+  max_for_plotting = min(rof1_avg)
+  max_for_plotting = min((/min(rof2_avg),max_for_plotting/))
+  max_for_plotting = min((/min(rof3_avg),max_for_plotting/))
+  max_for_plotting = min((/min(rof4_avg),max_for_plotting/))
+  print("min for plotting: "+max_for_plotting)
+else
+  max_for_plotting = max(rof1_avg)
+  max_for_plotting = max((/max(rof2_avg),max_for_plotting/))
+  max_for_plotting = max((/max(rof3_avg),max_for_plotting/))
+  max_for_plotting = max((/max(rof4_avg),max_for_plotting/))
+  print("max for plotting: "+max_for_plotting)
+end if
+
 system("mkdir -p ./climo")
 
 wks = gsn_open_wks("pdf","./climo/climo_comp_panel_"+var)              ; send graphics to PNG file
@@ -228,8 +244,12 @@ res@cnLineLabelsOn  = False
 if (var .eq. "ROF")
   res@cnLevelSelectionMode =  "ManualLevels"
   res@cnMinLevelValF       = 0.05
-  res@cnMaxLevelValF       = 0.8
-  res@cnLevelSpacingF      = 0.05
+  if (use_max_for_plotting) then
+    res@cnMaxLevelValF       = max_for_plotting
+  else
+    res@cnMaxLevelValF       = 0.8
+  end if
+  res@cnLevelSpacingF      = (res@cnMaxLevelValF  - res@cnMinLevelValF)/15.0
   cmap                     := read_colormap_file("MPL_BuGn")
   res@cnFillPalette        := cmap
 end if
@@ -252,24 +272,37 @@ end if
 if (var .eq. "PRECIP")
   res@cnLevelSelectionMode =  "ManualLevels"
   res@cnMinLevelValF       = 2.1
-  res@cnMaxLevelValF       = 3.8
-  res@cnLevelSpacingF      = 0.1
+  if (use_max_for_plotting) then
+    res@cnMaxLevelValF       = max_for_plotting
+  else
+    res@cnMaxLevelValF       = 3.8
+  end if
+  res@cnLevelSpacingF      = (res@cnMaxLevelValF  - res@cnMinLevelValF)/17.0
   cmap                     := read_colormap_file("cmocean_matter")
   res@cnFillPalette        := cmap
 end if
 if (var .eq. "SWE")
   res@cnLevelSelectionMode =  "ManualLevels"
   res@cnMinLevelValF       = 0.
-  res@cnMaxLevelValF       = 40.0
-  res@cnLevelSpacingF      = 1.
+  max_scaling = 0.5
+  if (use_max_for_plotting) then
+    res@cnMaxLevelValF       = max_for_plotting * max_scaling
+  else
+    res@cnMaxLevelValF       = 40.0
+  end if
+  res@cnLevelSpacingF      = (res@cnMaxLevelValF  - res@cnMinLevelValF)/40.0
   cmap                     := read_colormap_file("cmocean_dense")
   res@cnFillPalette        := cmap
 end if
 if (var .eq. "dSWE")
   res@cnLevelSelectionMode =  "ManualLevels"
-  res@cnMinLevelValF       =  -4.0
+  if (use_max_for_plotting) then
+    res@cnMinLevelValF       = max_for_plotting
+  else
+    res@cnMinLevelValF       = -4.0
+  end if
   res@cnMaxLevelValF       =  -1.2
-  res@cnLevelSpacingF      =  0.1
+  res@cnLevelSpacingF      = (res@cnMaxLevelValF  - res@cnMinLevelValF)/28.0
   cmap                     := read_colormap_file("MPL_YlGnBu")
   res@cnFillPalette        := cmap(::-1,:)
 end if
