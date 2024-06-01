@@ -12,17 +12,17 @@ MAXLAT=44.0
 MINLON=-80.0
 MAXLON=-74.0
 
-## California
-# MINLAT=32.0
-# MAXLAT=43.0
-# MINLON=-128.0
-# MAXLON=-113.0
-
 ## WillametteBasin
 # MINLAT=42.0
 # MAXLAT=47.0
 # MINLON=-126.0
 # MAXLON=-120.0
+
+## California
+# MINLAT=32.0
+# MAXLAT=43.0
+# MINLON=-128.0
+# MAXLON=-113.0
 
 ######################################################################################
 

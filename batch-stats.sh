@@ -3,9 +3,9 @@
 # Script settings
 USGS_gauge="01570500"   # 01570500 for SRB, 14211720 for Willamette, 11425500 for SacRiver
 BASINSHAPE="srb"        # srb, WillametteBasin, SacRB_USGS1802
+auto_domain_climo=false  # false to reproduce SRB domain, true otherwise
 merge_pngs=true
 perform_analysis=true
-auto_domain_climo=false  # false to reproduce SRB domain, true otherwise
 force_purge=true
 
 ######################################################################################
