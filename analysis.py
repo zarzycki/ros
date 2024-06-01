@@ -156,7 +156,7 @@ if percFilter > 0.0:
         '''
         Highlights the flagged ROS events with a red rectangle
         '''
-        ax.legend()
+        ax.legend(loc='lower left')  # Force legend to bottom left
 
         ax.set_xlabel("Date", fontsize=14)
         ax.set_ylabel("PRECIP, ROF, dSWE (mm/day)", fontsize=14)
@@ -277,7 +277,8 @@ if percFilter > 0.0:
             ax.set_ylim(axlims[1])
             ax.set_xlabel(xaxis+" (mm/day)", fontsize=14)
             ax.set_ylabel(yaxis+" (mm/day)", fontsize=14)
-            ax.set_title(model+" Water Year "+ str(year), fontsize=14)
+            # Need to increment year by 1 because of how water year is defined
+            ax.set_title(model+" Water Year "+ str(int(year)+1), fontsize=14)
             ax.tick_params(axis='both', which='major', labelsize=14)
 
             if add_panels:
@@ -285,7 +286,7 @@ if percFilter > 0.0:
                 ax.text(0.02, 0.95, panel_label, transform=ax.transAxes, fontsize=30, fontweight='bold', va='top')
 
             plt.tight_layout()
-            fig.savefig(outputdir+"/"+model+"_"+str((year))+"_scatplot.pdf", bbox_inches='tight')
+            fig.savefig(outputdir+"/"+model+"_"+str(year)+"_scatplot.pdf", bbox_inches='tight')
             plt.close()
 
 print("... DONE!")
