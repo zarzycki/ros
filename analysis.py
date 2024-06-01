@@ -18,7 +18,7 @@ percFilter=float(sys.argv[2])  # -1.  (95.)  ## Do we want to filter on a partic
 usgs_station_id=str(sys.argv[3]) # What is the txt to the gauge string?
 
 ## For now defaults
-wt = 1.4; st = 1.4; pt = 2.0  #wt = ROF threshold, st = SWE threshold, #pt = Precip rate threshold
+wt = 1.4; st = 1.4; pt = 2.0; ft = 0.2  #wt = ROF threshold, st = SWE threshold, #pt = Precip rate threshold, #ft = dSWE frac thresh
 window = 5; swindow = 7       #window = netcdf data smoothing window, swindow = streamflow smoothing window
 yaxis = "PRECIP"
 xaxis = "dSWE"
@@ -55,14 +55,18 @@ pltdates = sussdata["time"]
 
 # If we want to pick a percentile instead of a fixed value, get wt + st percentiles consistent with window
 if percFilter > 0.0:
-    wttmp, sttmp, pttmp = thresh_based_on_perc(percFilter,sussdata,window);
+    wttmp, sttmp, pttmp, fttmp = thresh_based_on_perc(percFilter,sussdata,window);
     # Only update wt and st for percentiles, keep pt as either 0 or fixed cutoff
     wt = wttmp
     st = sttmp
-print('using rof/wt: ',wt,'   swe/st: ',st,'   precip/pt: ',pt)
+    # Don't update fraction either
+    #if ft > 0.:
+    #    ft = fttmp
+print('using rof/wt: ',wt,'   swe/st: ',st,'   precip/pt: ',pt,'   dswefrac/ft: ',ft)
 
 # Get event list and put into pandas list
-events = get_events(sussdata, wt, st, pt, window);
+events = get_events(sussdata, wt, st, pt, ft, window);
+
 pdevents = []
 eventdf = get_df(events)
 for event in events:
@@ -89,6 +93,7 @@ eventdf['Thresh'] = percFilter
 eventdf['wt_rof'] = wt
 eventdf['st_swe'] = st
 eventdf['pt_pre'] = pt
+eventdf['ft_fsw'] = ft
 
 ## If output subdir doesn't exist, create it.
 if not os.path.exists(outputdir):

@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 def is_odd(num):
     return num % 2 != 0
 
-def get_events(data, wthresh, sthresh, pthresh, window):
+def get_events(data, wthresh, sthresh, pthresh, fthresh, window):
 
     # Do we return moving window timeseries or raw daily values?
     # False will accurately capture "real" extrema
@@ -32,7 +32,7 @@ def get_events(data, wthresh, sthresh, pthresh, window):
     '''
 
     rosevents = []
-    datelist, preciplist, runofflist, dswelist = (np.array([]) for i in range(4))
+    datelist, preciplist, runofflist, dswelist, fswelist = (np.array([]) for i in range(5))
     dtlist = np.array([], dtype = "datetime64")
     '''
     Initializes several ndarrays for use in computation below.
@@ -54,10 +54,18 @@ def get_events(data, wthresh, sthresh, pthresh, window):
         wprecip = precip.isel(time = slice(tindex-windowst, tindex+windowen)).mean()
         wrof = rof.isel(time = slice(tindex-windowst, tindex+windowen)).mean()
         wdswe = -1*dswe.isel(time = slice(tindex-windowst, tindex+windowen)).mean()
+        if fthresh > 0.0:
+            wfswe = np.maximum(wdswe, 0) / (wprecip + np.maximum(wdswe, 0))
+        else:
+            wfswe = 0.0
         # Exact values (this days exact daily obs)
         xprecip = precip.isel(time = tindex)
         xrof = rof.isel(time = tindex)
         xdswe = -1*dswe.isel(time = tindex)
+        if fthresh > 0.0:
+            xfswe = np.maximum(xdswe, 0) / (xprecip + np.maximum(xdswe, 0))
+        else:
+            xfswe = 0.0
 
         '''
         This looks at three fields separately: The amount of liquid-equivalent precipitation, the amount
@@ -72,7 +80,7 @@ def get_events(data, wthresh, sthresh, pthresh, window):
         ### Debugging print
         #print(str(tindex)+" "+str(dates[tindex].values)+" "+str(wrof.values)+"      "+str(rof[tindex].mean().values))
 
-        if wrof >= wthresh and wdswe >= sthresh and wprecip >= pthresh: #Can add a wprecip >= pthresh if desired
+        if wrof >= wthresh and wdswe >= sthresh and wprecip >= pthresh and wfswe >= fthresh:
             '''
             This checks if a day has a runoff and snowmelt component that exceeds some user-defined criteria.
             This is done to filter out very small events which don't have significant impacts. A half-inch of
@@ -99,10 +107,12 @@ def get_events(data, wthresh, sthresh, pthresh, window):
                     preciplist = np.append(preciplist, wprecip)
                     runofflist = np.append(runofflist, wrof)
                     dswelist = np.append(dswelist, wdswe)
+                    fswelist = np.append(fswelist, wfswe)
                 else:
                     preciplist = np.append(preciplist, xprecip)
                     runofflist = np.append(runofflist, xrof)
                     dswelist = np.append(dswelist, xdswe)
+                    fswelist = np.append(fswelist, xfswe)
 
                 '''
                 This stores the start day, mean precipitation, mean runoff, and mean dSWE across the basin for the
@@ -118,9 +128,9 @@ def get_events(data, wthresh, sthresh, pthresh, window):
             tempdate = 0
 
             if len(dtlist) >=1:
-                event = {"Dates": np.copy(dtlist), "Precips": np.copy(preciplist), "Runoffs": np.copy(runofflist), "dSWEs": np.copy(dswelist)}
+                event = {"Dates": np.copy(dtlist), "Precips": np.copy(preciplist), "Runoffs": np.copy(runofflist), "dSWEs": np.copy(dswelist), "fSWEs": np.copy(fswelist)}
                 rosevents.append(event)
-                datelist, preciplist, runofflist, dswelist = (np.array([]) for i in range(4))
+                datelist, preciplist, runofflist, dswelist, fswelist = (np.array([]) for i in range(5))
                 dtlist = np.array([], dtype = "datetime64")
                 '''
                 This "stops" the event when it's over, and stores the statistics for the event in a list
@@ -145,14 +155,20 @@ def get_w_s_perc(data, window):
     pprecip = []
     prof = []
     pdswe = []
+    pfswe = []
 
     tempdate = 0
     for tindex in range(len(dswe["time"])):
         pprecip += [precip.isel(time = slice(tindex, tindex+window)).mean()]
         prof += [rof.isel(time = slice(tindex, tindex+window)).mean()]
         pdswe += [-1*dswe.isel(time = slice(tindex, tindex+window)).mean()]
+        pfswe += [ \
+            -1*dswe.isel(time = slice(tindex, tindex+window)).mean() / \
+            ( -1*dswe.isel(time = slice(tindex, tindex+window)).mean() + \
+            precip.isel(time = slice(tindex, tindex+window)).mean() ) \
+            ]
 
-    return pprecip, prof, pdswe
+    return pprecip, prof, pdswe, pfswe
 
 def get_df(events):
     # This is an attempt to create a single comprehensive dataframe describing the statistics for all events
@@ -176,7 +192,11 @@ def get_df(events):
                             "Average Runoff": [sum(event["Runoffs"])/len(event["Runoffs"]) for event in events],
                             "Total dSWE": [sum(event["dSWEs"]) for event in events],
                             "Max dSWE": [max(event["dSWEs"]) for event in events],
-                            "Average dSWE": [sum(event["dSWEs"])/len(event["dSWEs"]) for event in events]})
+                            "Average dSWE": [sum(event["dSWEs"])/len(event["dSWEs"]) for event in events],
+                            "Total fSWE": [sum(event["fSWEs"]) for event in events],
+                            "Max fSWE": [max(event["fSWEs"]) for event in events],
+                            "Average fSWE": [sum(event["fSWEs"])/len(event["fSWEs"]) for event in events]
+                            })
     return eventdf
 
 def get_wyear(year, sussdata):
@@ -336,11 +356,12 @@ def get_stream_percentiles(streamsuss):
     return streamsussx
 
 def thresh_based_on_perc(percFilter,sussdata,window):
-    ppr, prof, pswe = get_w_s_perc(sussdata,window)
+    ppr, prof, pswe, fswe = get_w_s_perc(sussdata,window)
     wt = np.nanpercentile(prof, percFilter)
     st = np.nanpercentile(pswe, percFilter)
     pt = np.nanpercentile(ppr, percFilter)
-    return wt, st, pt
+    ft = np.nanpercentile(fswe, percFilter)
+    return wt, st, pt, ft
 
 def change_offset(sussdata,offset):
     offset = int(offset)
