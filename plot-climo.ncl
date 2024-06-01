@@ -13,10 +13,10 @@ else
 end if
 print("get_plot_domain_from_f1: "+get_plot_domain_from_f1)
 
-f1 = addfile("./netcdf/"+models(0)+"_1985to2005_masked.nc","r")
-f2 = addfile("./netcdf/"+models(1)+"_1985to2005_masked.nc","r")
-f3 = addfile("./netcdf/"+models(2)+"_1985to2005_masked.nc","r")
-f4 = addfile("./netcdf/"+models(3)+"_1985to2005_masked.nc","r")
+f1 = addfile("./netcdf/"+models(0)+"_1985to2005_masked_"+basinshape+".nc","r")
+f2 = addfile("./netcdf/"+models(1)+"_1985to2005_masked_"+basinshape+".nc","r")
+f3 = addfile("./netcdf/"+models(2)+"_1985to2005_masked_"+basinshape+".nc","r")
+f4 = addfile("./netcdf/"+models(3)+"_1985to2005_masked_"+basinshape+".nc","r")
 
 shpfilename="./shapes/"+basinshape+"/"+basinshape+".shp"
 shp = addfile(shpfilename,"r")

@@ -36,7 +36,7 @@ outputdir="./output/"+basin_shape
 print("Analyzing model: "+model)
 
 years = range(STYR, ENYR+1, 1); years = [str(i) for i in years]; startyear = years[0]; endyear = years[-1]
-datafile = "./netcdf/"+model+"_"+startyear+"to"+endyear+"_masked.nc"
+datafile = "./netcdf/"+model+"_"+startyear+"to"+endyear+"_masked_"+basin_shape+".nc"
 sussdata = xr.open_dataset(datafile)
 
 ### E3SM is offset by a day (i.e., Jan 2 reports the average of Jan 1)

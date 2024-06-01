@@ -22,10 +22,10 @@ def is_summer(month):
 #-------
 
 # Open data
-jra = xr.open_dataset("./netcdf/JRA_1985to2005_masked.nc")
-l15 = xr.open_dataset("./netcdf/L15_1985to2005_masked.nc")
-nldas = xr.open_dataset("./netcdf/NLDAS_1985to2005_masked.nc")
-e3sm = xr.open_dataset("./netcdf/E3SM_1985to2005_masked.nc")
+jra = xr.open_dataset("./netcdf/JRA_1985to2005_masked_"+basin_shape+".nc")
+l15 = xr.open_dataset("./netcdf/L15_1985to2005_masked_"+basin_shape+".nc")
+nldas = xr.open_dataset("./netcdf/NLDAS_1985to2005_masked_"+basin_shape+".nc")
+e3sm = xr.open_dataset("./netcdf/E3SM_1985to2005_masked_"+basin_shape+".nc")
 
 ## If output subdir doesn't exist, create it.
 if not os.path.exists(OUTPUTDIR):
