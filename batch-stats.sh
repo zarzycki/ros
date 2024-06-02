@@ -7,6 +7,7 @@ auto_domain_climo=false  # false to reproduce SRB domain, true otherwise
 merge_pngs=true
 perform_analysis=true
 force_purge=true
+UQSTR=""
 
 ######################################################################################
 
@@ -29,9 +30,16 @@ while [[ $# -gt 0 ]]; do
 done
 
 OUTPUTDIR="./output/$BASINSHAPE/"
+if [ -n "$UQSTR" ]; then
+  NEW_OUTDIR="${OUTPUTDIR/${BASINSHAPE}/${BASINSHAPE}_${UQSTR}}"
+else
+  NEW_OUTDIR="$OUTPUTDIR"
+fi
+echo $OUTPUTDIR
+echo $NEW_OUTDIR
 
 if [ "$force_purge" == "true" ]; then
-  rm -vrf $OUTPUTDIR
+  rm -vrf $NEW_OUTDIR
 fi
 
 set -e # Turn on error checking
@@ -132,5 +140,14 @@ ncl plot-climo.ncl 'var="PRECIP"' 'auto_domain_climo="'$auto_domain_climo'"' 'ba
 
 echo "Event comparison"
 python compare-event.py $BASINSHAPE
+
+if [ -n "$UQSTR" ]; then
+  if [ -d "$OUTPUTDIR" ]; then
+    mv "$OUTPUTDIR" "$NEW_OUTDIR"
+    echo "Moved $OUTPUTDIR to $NEW_OUTDIR"
+  else
+    echo "Directory $OUTPUTDIR does not exist"
+  fi
+fi
 
 echo "DONE!"

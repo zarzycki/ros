@@ -19,7 +19,7 @@ usgs_station_id=str(sys.argv[3]) # What is the txt to the gauge string?
 basin_shape=str(sys.argv[4]) # What is the basin flag?
 
 ## For now defaults
-wt = 1.4; st = 1.4; pt = 2.0; ft = 0.2  #wt = ROF threshold, st = SWE threshold, #pt = Precip rate threshold, #ft = dSWE frac thresh
+wt = 1.4; st = 1.4; pt = 2.0; ft = -1.0  #wt = ROF threshold, st = SWE threshold, #pt = Precip rate threshold, #ft = dSWE frac thresh
 window = 5; swindow = 7       #window = netcdf data smoothing window, swindow = streamflow smoothing window
 yaxis = "PRECIP"
 xaxis = "dSWE"
