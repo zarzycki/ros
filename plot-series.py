@@ -31,7 +31,7 @@ event_alpha=0.15
 ####################################################################################
 
 # Load the NetCDF file
-ncdata = xr.open_dataset("./output/srb/tseries/tseries_JRA_srb_95.0.nc")
+ncdata = xr.open_dataset("./output/srb/tseries/tseries_JRA_srb_95.nc")
 
 # Extract the time series data for precip, wprecip, rof, wrof, and thresholds
 precip = ncdata["precip"]

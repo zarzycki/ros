@@ -54,6 +54,11 @@ precipmean = sussdata["PRECIP"].weighted(weights).mean(dim = ["lat", "lon"], ski
 # Get timeseries of dates from dataset
 pltdates = sussdata["time"]
 
+if percFilter > 0.0:
+    perclabel = str(int(percFilter))
+else:
+    perclabel = "AB"
+
 # If we want to pick a percentile instead of a fixed value, get wt + st percentiles consistent with window
 if percFilter > 0.0:
     wttmp, sttmp, pttmp, fttmp = thresh_based_on_perc(percFilter,sussdata,window);
@@ -66,7 +71,7 @@ if percFilter > 0.0:
 print('using rof/wt: ',wt,'   swe/st: ',st,'   precip/pt: ',pt,'   dswefrac/ft: ',ft)
 
 # Get event list and put into pandas list
-events = get_events(sussdata, wt, st, pt, ft, window, model, basin_shape, str(percFilter));
+events = get_events(sussdata, wt, st, pt, ft, window, model, basin_shape, perclabel);
 
 pdevents = []
 eventdf = get_df(events)
@@ -105,10 +110,6 @@ if not os.path.exists(outputdir+'/csv/'):
     os.makedirs(outputdir+'/csv/')
 
 ## Write events to CSV
-if percFilter > 0.0:
-    perclabel = str(int(percFilter))
-else:
-    perclabel = "AB"
 eventdf.to_csv(outputdir+"/csv/Events_"+model+"_"+startyear+"to"+endyear+"_"+perclabel+".csv")
 
 add_panels=False
