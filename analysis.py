@@ -66,7 +66,7 @@ if percFilter > 0.0:
 print('using rof/wt: ',wt,'   swe/st: ',st,'   precip/pt: ',pt,'   dswefrac/ft: ',ft)
 
 # Get event list and put into pandas list
-events = get_events(sussdata, wt, st, pt, ft, window);
+events = get_events(sussdata, wt, st, pt, ft, window, model, basin_shape, str(percFilter));
 
 pdevents = []
 eventdf = get_df(events)
