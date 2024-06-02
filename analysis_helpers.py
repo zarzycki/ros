@@ -3,11 +3,12 @@ import xarray as xr
 import pandas as pd
 pd.options.mode.chained_assignment = None  # default='warn'
 from datetime import datetime, timedelta
+import os
 
 def is_odd(num):
     return num % 2 != 0
 
-def get_events(data, wthresh, sthresh, pthresh, fthresh, window):
+def get_events(data, wthresh, sthresh, pthresh, fthresh, window, model, basin, config):
 
     # Do we return moving window timeseries or raw daily values?
     # False will accurately capture "real" extrema
@@ -34,6 +35,14 @@ def get_events(data, wthresh, sthresh, pthresh, fthresh, window):
     rosevents = []
     datelist, preciplist, runofflist, dswelist, fswelist = (np.array([]) for i in range(5))
     dtlist = np.array([], dtype = "datetime64")
+
+    # Initialize arrays for smoothed values
+    wprecip_smoothed = np.full(len(dates), np.nan)
+    wrof_smoothed = np.full(len(dates), np.nan)
+    wdswe_smoothed = np.full(len(dates), np.nan)
+    wfswe_smoothed = np.full(len(dates), np.nan)
+    fswe = np.full(len(dates), np.nan)
+
     '''
     Initializes several ndarrays for use in computation below.
     '''
@@ -51,20 +60,38 @@ def get_events(data, wthresh, sthresh, pthresh, fthresh, window):
 
     for tindex in range(len(dates)):
         # Smoothed values (this days running mean)
-        wprecip = precip.isel(time = slice(tindex-windowst, tindex+windowen)).mean()
-        wrof = rof.isel(time = slice(tindex-windowst, tindex+windowen)).mean()
-        wdswe = -1*dswe.isel(time = slice(tindex-windowst, tindex+windowen)).mean()
-        if fthresh > 0.0:
-            wfswe = np.maximum(wdswe, 0) / (wprecip + np.maximum(wdswe, 0))
-        else:
+        start_smooth_index=max(0,tindex-windowst)
+        end_smooth_index=min(tindex+windowen,len(dates))
+        #print(str(start_smooth_index),' ',str(end_smooth_index))
+        wprecip = precip.isel(time = slice(start_smooth_index, end_smooth_index)).mean()
+        wrof = rof.isel(time = slice(start_smooth_index, end_smooth_index)).mean()
+        wdswe = -1*dswe.isel(time = slice(start_smooth_index, end_smooth_index)).mean()
+
+        denominator = wprecip + np.maximum(wdswe, 0)
+        wfswe = np.where(denominator < 1e-10, 0, np.maximum(wdswe, 0) / denominator)
+
+        # Store smoothed values in arrays
+        wprecip_smoothed[tindex] = wprecip
+        wrof_smoothed[tindex] = wrof
+        wdswe_smoothed[tindex] = wdswe
+        wfswe_smoothed[tindex] = wfswe
+
+        # Reset wfse if negative threshold (i.e., no fraction thresholding)
+        if fthresh < 0.0:
             wfswe = 0.0
+
         # Exact values (this days exact daily obs)
         xprecip = precip.isel(time = tindex)
         xrof = rof.isel(time = tindex)
         xdswe = -1*dswe.isel(time = tindex)
-        if fthresh > 0.0:
-            xfswe = np.maximum(xdswe, 0) / (xprecip + np.maximum(xdswe, 0))
-        else:
+
+        denominator = xprecip + np.maximum(xdswe, 0)
+        xfswe = np.where(denominator < 1e-10, 0, np.maximum(xdswe, 0) / denominator)
+
+        fswe[tindex] = xfswe
+
+        # Reset xfswe if needed
+        if fthresh < 0.0:
             xfswe = 0.0
 
         '''
@@ -136,6 +163,43 @@ def get_events(data, wthresh, sthresh, pthresh, fthresh, window):
                 This "stops" the event when it's over, and stores the statistics for the event in a list
                 of dictionaries. It then resets the ndarrays for the next event.
                 '''
+
+    #for tindex in range(len(dates)):
+    #    print(f"precip({tindex}): {precip[tindex].item()}  wprecip({tindex}): {wprecip_smoothed[tindex]}")
+    mean_precip = precip.mean().item()
+    mean_wprecip = np.nanmean(wprecip_smoothed)  # Use np.nanmean to ignore NaNs in the smoothed array
+    print("\nMeans of precip and wprecip:")
+    print(f"Mean of precip: {mean_precip}")
+    print(f"Mean of wprecip: {mean_wprecip}")
+
+    # Create a new xarray.Dataset to store the data
+    dataset = xr.Dataset(
+        {
+            "precip": (["time"], precip.values),
+            "wprecip": (["time"], wprecip_smoothed),
+            "dswe": (["time"], dswe.values),
+            "wdswe": (["time"], wdswe_smoothed),
+            "rof": (["time"], rof.values),
+            "wrof": (["time"], wrof_smoothed),
+            "fswe": (["time"], fswe),
+            "wfswe": (["time"], wfswe_smoothed),
+            "wthresh": wthresh,
+            "sthresh": sthresh,
+            "pthresh": pthresh,
+            "fthresh": fthresh,
+        },
+        coords={
+            "time": dates,
+        }
+    )
+
+    # Save the dataset to a NetCDF file
+    outputdir="./output/"+basin+"/tseries/"
+    if not os.path.exists(outputdir):
+        os.makedirs(outputdir)
+    outputfile="tseries_"+model+"_"+basin+"_"+config+".nc"
+    dataset.to_netcdf(outputdir+"/"+outputfile)
+
     return rosevents
 
 def get_w_s_perc(data, window):
