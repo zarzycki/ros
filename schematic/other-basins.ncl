@@ -35,7 +35,7 @@ rof2&lon@units="degrees_east"
 rof2@_FillValue=-999.9
 rof2 = where(isnan_ieee(rof2),rof2@_FillValue,rof2)
 
-wks = gsn_open_wks(outtype,"merge_vs_mask_"+var)              ; send graphics to PNG file
+wks = gsn_open_wks(outtype,"other_basins_"+var)              ; send graphics to PNG file
 
 plot = new(2,graphic)                          ; create a plot array
 
@@ -194,10 +194,11 @@ end if
 
 resP@amJust = "TopLeft"
 resP@gsnPanelFigureStrings= (/"a.","b.","c.","d."/)
-resP@gsnPanelFigureStringsFontHeightF  = 0.018
+resP@gsnPanelFigureStringsFontHeightF  = 0.025
 
 gsn_panel(wks,plot,(/1,2/),resP)               ; now draw as one plot
 
-
+; pdf crop
+;system("pdfcrop other_basins_"+var+"."+outtype+" other_basins_"+var+"."+outtype)
 
 end
