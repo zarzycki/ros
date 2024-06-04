@@ -50,7 +50,7 @@ if (var .eq. "ROF")
 
     res@cnMaxLevelValF       = 46.0
   res@cnLevelSpacingF      = (res@cnMaxLevelValF  - res@cnMinLevelValF)/22.0
-  cmap                     := read_colormap_file("./plasma.rgb")
+  cmap                     := read_colormap_file("../ncl_utils/plasma.rgb")
   res@cnFillPalette        := cmap
 end if
 if (var .eq. "BASE")
