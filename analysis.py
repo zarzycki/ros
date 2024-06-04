@@ -4,6 +4,7 @@ import xarray as xr
 import pandas as pd
 pd.options.mode.chained_assignment = None  # default='warn'
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 from datetime import datetime, timedelta
 from analysis_helpers import *
 import sys
@@ -128,6 +129,14 @@ if percFilter > 0.0:
     sum_swe = np.empty(len(years))
     counter=0
 
+    def plot_streams_data(wyear, streamsussx, ax, markstyle, marksize):
+        p90, = ax.plot(wyear, xr.where(streamsussx["P90"].sel(datetime=wyear), 55., -9999.), color="lightcyan", marker=markstyle, ms=marksize, linestyle='None', label='_nolegend_')
+        p95, = ax.plot(wyear, xr.where(streamsussx["P95"].sel(datetime=wyear), 55., -9999.), color="lightskyblue", marker=markstyle, ms=marksize, linestyle='None', label='_nolegend_')
+        p98, = ax.plot(wyear, xr.where(streamsussx["P98"].sel(datetime=wyear), 55., -9999.), color="royalblue", marker=markstyle, ms=marksize, linestyle='None', label='_nolegend_')
+        p99, = ax.plot(wyear, xr.where(streamsussx["P99"].sel(datetime=wyear), 55., -9999.), color="midnightblue", marker=markstyle, ms=marksize, linestyle='None', label='_nolegend_')
+        p999, = ax.plot(wyear, xr.where(streamsussx["P999"].sel(datetime=wyear), 55., -9999.), color="black", marker=markstyle, ms=marksize, linestyle='None', label='_nolegend_')
+        return [p90, p95, p98, p99, p999]
+
     for year in years:
         print("Plotting year: "+year) if debug_verbose else None;
         year = int(year)
@@ -140,20 +149,22 @@ if percFilter > 0.0:
         ax.xaxis.grid(True, color='gray', linestyle='--', linewidth=0.5, alpha = 0.8)
         #debugargs="marker='o', mec='k', ms=0.7"
 
-        if (plot_streams):
-            #markstyle='$\u25AE$'
-            #markstyle='s'
-            markstyle='$\u2223$'
-            #markstyle='|'
-            marksize=25.0
-            ax.plot(wyear, xr.where(streamsussx["P90"].sel(datetime = wyear), 55., -9999.), color = "lightcyan", marker=markstyle, ms=marksize, linestyle = 'None', label='_nolegend_')
-            ax.plot(wyear, xr.where(streamsussx["P95"].sel(datetime = wyear), 55., -9999.), color = "lightskyblue", marker=markstyle, ms=marksize, linestyle = 'None', label='_nolegend_')
-            ax.plot(wyear, xr.where(streamsussx["P98"].sel(datetime = wyear), 55., -9999.), color = "royalblue", marker=markstyle, ms=marksize, linestyle = 'None', label='_nolegend_')
-            ax.plot(wyear, xr.where(streamsussx["P99"].sel(datetime = wyear), 55., -9999.), color = "midnightblue", marker=markstyle, ms=marksize, linestyle = 'None', label='_nolegend_')
-            ax.plot(wyear, xr.where(streamsussx["P999"].sel(datetime = wyear), 55., -9999.), color = "black", marker=markstyle, ms=marksize, linestyle = 'None', label='_nolegend_')
+        if plot_streams:
+            markstyle = '$\u2223$'
+            marksize = 35.0
+            bars = plot_streams_data(wyear, streamsussx, ax, markstyle, marksize)
+
+        # Debugging
+        #if year == 1995:
+        #    for day in wyear.time:
+        #        day_str = day.dt.strftime('%Y-%m-%d').item()
+        #        precip_value = precipmean.sel(time=day).item()
+        #        rof_value = rofmean.sel(time=day).item()
+        #        dswe_value = dswemean.sel(time=day).item()
+        #        print(f"{day_str} {precip_value} {rof_value} {dswe_value}")
 
         ax.plot(wyear, precipmean.sel(time = wyear), color = "#009E73", label = "PRECIP", linewidth=2.5, alpha = 1.0)
-        ax.plot(wyear, 3.0*rofmean.sel(time = wyear), color = "#E69F00", label = "ROF", linewidth=2.0, alpha = 0.8)
+        ax.plot(wyear, 2.5*rofmean.sel(time = wyear), color = "#E69F00", label = "ROF", linewidth=2.0, alpha = 0.8)
         ax.plot(wyear, dswemean.sel(time = wyear), color = "#CC79A7", label = "dSWE", linewidth=1.75, alpha = 0.6)
         for event in pdevents:
             if (np.isin(event, wyear).all()):
@@ -162,12 +173,32 @@ if percFilter > 0.0:
         '''
         Highlights the flagged ROS events with a red rectangle
         '''
-        ax.legend(loc='lower left')  # Force legend to bottom left
+        main_legend = ax.legend(loc='lower left')
+
+        if plot_streams:
+            # Create second legend for the bars
+            custom_lines = [
+                Line2D([0], [0], color="lightcyan", marker='s', markersize=10, linestyle='None'),
+                Line2D([0], [0], color="lightskyblue", marker='s', markersize=10, linestyle='None'),
+                Line2D([0], [0], color="royalblue", marker='s', markersize=10, linestyle='None'),
+                Line2D([0], [0], color="midnightblue", marker='s', markersize=10, linestyle='None'),
+                Line2D([0], [0], color="black", marker='s', markersize=10, linestyle='None')
+            ]
+
+            bars_legend = ax.legend(custom_lines, ['90%', '95%', '98%', '99%', '99.9%'], loc='lower right', title=None)
+            ax.add_artist(main_legend)
+
+        # Create secondary y-axis for ROF
+        ax2 = ax.twinx()
+        ax2.set_ylim(minshadingyval / 2.5, maxshadingyval / 2.5)
+        ax2.set_ylabel("ROF (mm/day)", fontsize=14)
+        ax2.tick_params(axis='both', which='major', labelsize=11)
+        ax2.grid(False)  # Hide grid for the secondary y-axis
 
         ax.set_xlabel("Date", fontsize=14)
-        ax.set_ylabel("PRECIP, ROF, dSWE (mm/day)", fontsize=14)
-        ax.set_title(model+" RoS Events", fontsize=14)
-        ax.tick_params(axis='both', which='major', labelsize=14)
+        ax.set_ylabel("PRECIP, dSWE (mm/day)", fontsize=14)
+        ax.set_title(f"{model} RoS Events ({basin_shape})", fontsize=14)
+        ax.tick_params(axis='both', which='major', labelsize=11)
 
         if add_panels:
             panel_label = panel_labels.get(model, 'Unknown Model')
@@ -211,7 +242,7 @@ if percFilter > 0.0:
                 ax.fill_between(event, minshadingyval, maxshadingyval, color = "blue", alpha = 0.15)
 
         ax.legend(fontsize=13)
-        ax.set_title(model+" SWE evolution", fontsize=16)
+        ax.set_title(model+" SWE evolution ("+basin_shape+")", fontsize=16)
         ax.set_xlabel("Date", fontsize=15)
         ax.set_ylabel("SWE (mm)", fontsize=15)
         ax.tick_params(axis='both', which='major', labelsize=15)
@@ -281,11 +312,11 @@ if percFilter > 0.0:
             ax.scatter(negxf, negyf, s = negsizef, facecolor = "red", edgecolor = "red")
             ax.set_xlim(axlims[0])
             ax.set_ylim(axlims[1])
-            ax.set_xlabel(xaxis+" (mm/day)", fontsize=14)
-            ax.set_ylabel(yaxis+" (mm/day)", fontsize=14)
+            ax.set_xlabel(xaxis+" (mm/day)", fontsize=16)
+            ax.set_ylabel(yaxis+" (mm/day)", fontsize=16)
             # Need to increment year by 1 because of how water year is defined
-            ax.set_title(model+" Water Year "+ str(int(year)+1), fontsize=14)
-            ax.tick_params(axis='both', which='major', labelsize=14)
+            ax.set_title(model+" WY"+ str(int(year)+1)+" ("+basin_shape+")", fontsize=16)
+            ax.tick_params(axis='both', which='major', labelsize=16)
 
             if add_panels:
                 panel_label = panel_labels.get(model, 'Unknown Model')
