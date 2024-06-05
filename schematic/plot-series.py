@@ -20,9 +20,9 @@ end_date = "1996-02-15"
 true_line_thick=0.8
 smooth_line_thick=2.5
 
-true_line_colors=['blue','red','green','orange']
-smooth_line_colors=['darkblue','darkred','darkgreen','darkorange']
-shading_colors=['lightblue','pink','lightgreen','orange']
+true_line_colors=['green','blue','red','orange']
+smooth_line_colors=['darkgreen','darkblue','darkred','darkorange']
+shading_colors=['lightgreen','lightblue','pink','orange']
 
 colored_alpha=0.8
 fill_vert=False
@@ -102,74 +102,20 @@ if plot_fraction:
 
 fig, axs = plt.subplots(npanels, 1, figsize=(12, 7), gridspec_kw={'hspace': 0})
 
-# Plot rof and wrof on the second subplot
-axs[0].plot(rof_selected.time, rof_smoothed, label='ROF', color=true_line_colors[0], linewidth=true_line_thick)
-axs[0].plot(wrof_selected.time, wrof_smoothed, label='ROF$_{sm}$', color=smooth_line_colors[0], linewidth=smooth_line_thick)
-axs[0].axhline(y=wthresh, color='grey', linestyle='--', label=f'$t_{{ROF}}$ = {wthresh:.1f}')
-axs[0].set_xlabel('Date')
-axs[0].set_ylabel('Runoff')
-axs[0].legend()
-axs[0].set_xticks([])
-axs[0].set_ylim([-1,17])
-
-if fill_vert:
-    fill_between_min=axs[0].get_ylim()[0]
-    fill_between_max=axs[0].get_ylim()[0]
-else:
-    fill_between_min=wrof_smoothed
-    fill_between_max=wthresh
-
-axs[0].fill_between(
-    wrof_selected.time,
-    fill_between_min,
-    fill_between_max,
-    where=(wrof_selected >= wthresh),
-    facecolor=shading_colors[0],
-    alpha=colored_alpha,
-)
-
-# Plot dswe and wdswe on the second subplot
-axs[1].plot(dswe_selected.time, dswe_smoothed, label='dSWE', color=true_line_colors[1], linewidth=true_line_thick)
-axs[1].plot(wdswe_selected.time, wdswe_smoothed, label='dSWE$_{sm}$', color=smooth_line_colors[1], linewidth=smooth_line_thick)
-axs[1].axhline(y=sthresh, color='grey', linestyle='--', label=f'$t_{{dSWE}}$ = {sthresh:.1f}')
-axs[1].set_xlabel('Date')
-axs[1].set_ylabel('dSWE')
-axs[1].legend()
-axs[1].set_xticks([])
-axs[1].set_ylim([-42,22])
-
-# Shading
-if fill_vert:
-    fill_between_min=axs[1].get_ylim()[0]
-    fill_between_max=axs[1].get_ylim()[1]
-else:
-    fill_between_min=wdswe_smoothed
-    fill_between_max=sthresh
-
-axs[1].fill_between(
-    wdswe_selected.time,
-    fill_between_min,
-    fill_between_max,
-    where=(wdswe_selected <= sthresh),
-    facecolor=shading_colors[1],
-    alpha=colored_alpha,
-)
-
 # Plot precip and wprecip on the first subplot
-axs[2].plot(precip_selected.time, precip_smoothed, label='PRECIP', color=true_line_colors[2], linewidth=true_line_thick)
-axs[2].plot(wprecip_selected.time, wprecip_smoothed, label='PRECIP$_{sm}$', color=smooth_line_colors[2], linewidth=smooth_line_thick)
+axs[0].plot(precip_selected.time, precip_smoothed, label='PRECIP', color=true_line_colors[0], linewidth=true_line_thick)
+axs[0].plot(wprecip_selected.time, wprecip_smoothed, label='PRECIP$_{sm}$', color=smooth_line_colors[0], linewidth=smooth_line_thick)
 #x1_new = np.linspace(0, len(precip_selected, 5000)
 #akima1 = Akima1DInterpolator(precip_selected.time, precip_smoothed)
-#axs[2].plot(x1_new, akima1(x1_new), label='precip', color='brown')
-axs[2].axhline(y=pthresh, color='grey', linestyle='--', label=f'$t_{{PRECIP}}$ = {pthresh:.1f}')
-axs[2].set_ylabel('Precipitation')
-axs[2].legend()
-axs[2].set_ylim([-1,22])
-if plot_fraction:
-    axs[2].set_xticks([])
+#axs[0].plot(x1_new, akima1(x1_new), label='precip', color='brown')
+axs[0].axhline(y=pthresh, color='grey', linestyle='--', label=f'$t_{{PRECIP}}$ = {pthresh:.1f}')
+axs[0].set_ylabel('PRECIP (mm/day)')
+axs[0].legend()
+axs[0].set_ylim([-1,22])
+axs[0].set_xticks([])
 
 # Shade the background when wprecip is greater than pthresh
-# axs[2].fill_between(
+# axs[0].fill_between(
 #     wprecip_selected.time,
 #     wprecip_selected,
 #     pthresh,
@@ -179,21 +125,74 @@ if plot_fraction:
 # )
 
 if fill_vert:
-    fill_between_min=axs[2].get_ylim()[2]
-    fill_between_max=axs[2].get_ylim()[1]
+    fill_between_min=axs[0].get_ylim()[0]
+    fill_between_max=axs[0].get_ylim()[1]
 else:
     fill_between_min=wprecip_smoothed
     fill_between_max=pthresh
 
-axs[2].fill_between(
+axs[0].fill_between(
     wprecip_selected.time,
     fill_between_min,
     fill_between_max,
     where=(wprecip_selected >= pthresh),
-    facecolor=shading_colors[2],
+    facecolor=shading_colors[0],
     alpha=colored_alpha,
 )
 
+# Plot rof and wrof on the second subplot
+axs[1].plot(rof_selected.time, rof_smoothed, label='ROF', color=true_line_colors[1], linewidth=true_line_thick)
+axs[1].plot(wrof_selected.time, wrof_smoothed, label='ROF$_{sm}$', color=smooth_line_colors[1], linewidth=smooth_line_thick)
+axs[1].axhline(y=wthresh, color='grey', linestyle='--', label=f'$t_{{ROF}}$ = {wthresh:.1f}')
+axs[1].set_xlabel('Date')
+axs[1].set_ylabel('ROF (mm/day)')
+axs[1].legend()
+axs[1].set_xticks([])
+axs[1].set_ylim([-1,17])
+
+if fill_vert:
+    fill_between_min=axs[1].get_ylim()[1]
+    fill_between_max=axs[1].get_ylim()[1]
+else:
+    fill_between_min=wrof_smoothed
+    fill_between_max=wthresh
+
+axs[1].fill_between(
+    wrof_selected.time,
+    fill_between_min,
+    fill_between_max,
+    where=(wrof_selected >= wthresh),
+    facecolor=shading_colors[1],
+    alpha=colored_alpha,
+)
+
+# Plot dswe and wdswe on the second subplot
+axs[2].plot(dswe_selected.time, dswe_smoothed, label='dSWE', color=true_line_colors[2], linewidth=true_line_thick)
+axs[2].plot(wdswe_selected.time, wdswe_smoothed, label='dSWE$_{sm}$', color=smooth_line_colors[2], linewidth=smooth_line_thick)
+axs[2].axhline(y=sthresh, color='grey', linestyle='--', label=f'$t_{{dSWE}}$ = {sthresh:.1f}')
+axs[2].set_xlabel('Date')
+axs[2].set_ylabel('dSWE (mm/day)')
+axs[2].legend()
+axs[2].set_ylim([-42,22])
+if plot_fraction:
+    axs[2].set_xticks([])
+
+# Shading
+if fill_vert:
+    fill_between_min=axs[2].get_ylim()[0]
+    fill_between_max=axs[2].get_ylim()[2]
+else:
+    fill_between_min=wdswe_smoothed
+    fill_between_max=sthresh
+
+axs[2].fill_between(
+    wdswe_selected.time,
+    fill_between_min,
+    fill_between_max,
+    where=(wdswe_selected <= sthresh),
+    facecolor=shading_colors[2],
+    alpha=colored_alpha,
+)
 
 if plot_fraction:
     axs[3].plot(fswe_selected.time, fswe_smoothed, label='fSWE', color=true_line_colors[3], linewidth=true_line_thick)
@@ -234,9 +233,23 @@ for _, row in filtered_events.iterrows():
 for ax in axs:
     ax.set_xlim(pd.to_datetime(start_date), pd.to_datetime(end_date))
 
-# Adjust the layout to remove white space between the subplots
+# Constants for font sizes
+label_fontsize = 16
+tick_fontsize = 14
+legend_fontsize = 14
+
+# Adjust labels and ticks on all axes
+for ax in axs:
+    ax.set_xlabel('Date', fontsize=label_fontsize)
+    ax.set_ylabel(ax.get_ylabel(), fontsize=label_fontsize)  # Use existing ylabel
+    ax.tick_params(axis='both', which='major', labelsize=tick_fontsize)
+    ax.legend(fontsize=legend_fontsize)
+
+# Specific adjustments for individual axes if needed
+# axs[0].set_ylabel('Precipitation', fontsize=label_fontsize)
+
+# Finally, adjust subplots and save the figure
 plt.tight_layout()
 plt.subplots_adjust(hspace=0)
-
 filename = "tseries.pdf"
-plt.savefig(filename, bbox_inches='tight')
+plt.savefig(filename)
