@@ -25,28 +25,22 @@ conda uninstall ncl  ### or mamba
 
 The instructions assume you are in the top level of the ROS repo. `ROSREPO` defines this location.
 
-### 1. Create "merged" files from raw climate data
+### 1. Create "merged" and "masked" files from raw climate data
 
 ```
 cd $ROSREPO/raw-process
-# Set ROSREPO and RAWDIR in batch-raw.sh
-./batch-raw.sh
+# Set ROSREPO and RAWDIR and BASINSHAPE in batch-raw.sh
+bash batch-raw.sh
 cd ..
 ```
 
 This will create four files in the "netcdf" subfolder of the repo with the "merged" datafiles over the SRB.
 
-### 2. Mask "merged" files
+To generate a merged file over a different CONUS basin, adjust the lat/lon settings in `batch-raw.sh`. An example for the Willamette Basin is included (but commented out). Note the longitude convention of negative values representing "degrees west."
 
+This will create four additional files in the "netcdf" subfolder of the repo, but with the data masked over the SRB (`BASINSHAPE="srb"`)
 
-```
-cd $ROSREPO/netcdf
-# Set ROSREPO
-./batch-mask.ncl
-cd ..
-```
-
-This will create four additional files in the "netcdf" subfolder of the repo, but with the data masked over the river basin.
+To generate masked files for a different basin, first put a set of shapefiles in a unique subdirectory under the "shapes" directory. Then update `batch-mask.sh` to point to this using the `BASINSHAPE` variable. `WillametteBasin` is commented out but included as an example.
 
 **NOTE**: If NCL is keeping "zero" values after masking, ex:
 
@@ -57,16 +51,45 @@ This will create four additional files in the "netcdf" subfolder of the repo, bu
 
 this is probably due to a version of NCL shipped with conda. I'm sure there are more clever solutions, but the hack is to flip the x/y calls on lines 240-241 of `ncl_utils/shapefile_utils.ncl`. See [NCL-list post](https://mailman.ucar.edu/pipermail/ncl-talk/2021-January/017775.html).
 
-### 3. Run statistics
+### 2. Run statistics
 
 ```
-$ROSREPO/batch-stats.sh
+bash $ROSREPO/batch-stats.sh
 ```
 
-There are a couple bools at the top of the script.
+There are a few settings at the top of the script.
 
+- `USGS_gauge` specifies the USGS number of a relevant gauge over the requested time period with daily streamflow data (used for plotting purposes only). To acquire gauge data, see the `./data` subfolder and the associated shell script.
+- `BASINSHAPE` this is the name of the basin that will be evaluated. This basin must have been masked by step #1.
+- `auto_domain_climo` set to true will tell the NCL code that plots the climatology to use the min/max coordinates from the merged domain (from `batch-raw.sh`) when plotting. Setting to FALSE allows the user to specify the actual min/max coordinates in the NCL code (FALSE reproduces the SRB results from Zarzycki et al., NHESS, 2024).
 - `merge_pngs` takes the single panel outputs and merges to 2x2 png panels for visualization, although this isn't used in the paper
 - `perform_analysis` decides whether the analysis to extract the ROS events should actually take place. This needs to be true if you haven't done so already, but since this is the most expensive part of the code, it makes sense to have a T/F switch.
+- `force_purge` set to true will delete all existing analysis files (e.g., statistics, images, etc.). It will not purge merged or masked NetCDF files.
+- `UQSTR` provides a "unique string" that will be appended to the basin name in the output directory tree. This is useful for sensitivity runs or other situations where you don't want to archive an output set under the "default" shapefile folder.
+
+#### Automated tip
+
+You can edit the top of `batch-stats.sh` to take command line args:
+
+```
+USGS_gauge=$2
+BASINSHAPE=$3
+auto_domain_climo=$1
+merge_pngs=true
+perform_analysis=true
+force_purge=true
+UQSTR=$4
+```
+
+and then run multiple versions of the code:
+
+```
+bash batch-stats.sh false "01570500" "srb" ""
+bash batch-stats.sh true "14211720" "WillametteBasin" ""
+bash batch-stats.sh true "11425500" "SacRB_USGS1802" ""
+bash batch-stats.sh false "01570500" "srb" "F14"
+```
+
 
 ## Repository notes:
 
