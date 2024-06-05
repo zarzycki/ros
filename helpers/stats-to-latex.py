@@ -9,15 +9,15 @@ def generate_latex(csv_file):
     for index, row in data.iterrows():
         latex_rows += (
             f"{row['Unnamed: 0']} & "
-            f"-{row['st_swe']:.1f} & "
-            f"{row['wt_rof']:.1f} & "
             f"{row['pt_pre']:.1f} & "
+            f"{row['wt_rof']:.1f} & "
+            f"-{row['st_swe']:.1f} & "
             f"{100*row['ft_fsw']:.0f} & "
             f"{row['Num']} & "
             f"{row['Event Length']:.1f} & "
-            f"-{row['Average dSWE']:.1f} & "
+            f"{row['Average Precip']:.1f} & "
             f"{row['Average Runoff']:.1f} & "
-            f"{row['Average Precip']:.1f} \\\\\n"
+            f"-{row['Average dSWE']:.1f} \\\\\n"
         )
 
     print(latex_rows)
