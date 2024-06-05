@@ -197,7 +197,7 @@ if percFilter > 0.0:
 
         ax.set_xlabel("Date", fontsize=14)
         ax.set_ylabel("PRECIP, dSWE (mm/day)", fontsize=14)
-        ax.set_title(f"{model} RoS Events ({basin_shape})", fontsize=14)
+        ax.set_title(f"{model} RoS Events ({basin_shape.upper()})", fontsize=14)
         ax.tick_params(axis='both', which='major', labelsize=11)
 
         if add_panels:
@@ -242,7 +242,7 @@ if percFilter > 0.0:
                 ax.fill_between(event, minshadingyval, maxshadingyval, color = "blue", alpha = 0.15)
 
         ax.legend(fontsize=13)
-        ax.set_title(model+" SWE evolution ("+basin_shape+")", fontsize=16)
+        ax.set_title(model+" SWE evolution ("+basin_shape.upper()+")", fontsize=16)
         ax.set_xlabel("Date", fontsize=15)
         ax.set_ylabel("SWE (mm)", fontsize=15)
         ax.tick_params(axis='both', which='major', labelsize=15)
@@ -315,7 +315,7 @@ if percFilter > 0.0:
             ax.set_xlabel(xaxis+" (mm/day)", fontsize=16)
             ax.set_ylabel(yaxis+" (mm/day)", fontsize=16)
             # Need to increment year by 1 because of how water year is defined
-            ax.set_title(model+" WY"+ str(int(year)+1)+" ("+basin_shape+")", fontsize=16)
+            ax.set_title(model+" WY"+ str(int(year)+1)+" ("+basin_shape.upper()+")", fontsize=16)
             ax.tick_params(axis='both', which='major', labelsize=16)
 
             if add_panels:
