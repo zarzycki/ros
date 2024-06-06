@@ -2,7 +2,7 @@
 
 RAWDIR="/Users/cmz5202/NetCDF/ros/"
 ROSREPO="/Users/cmz5202/Software/ros/"
-BASINSHAPE="WillametteBasin"       # srb, WillametteBasin, SacRB_USGS1802
+BASINSHAPE="srb"       # srb, WillametteBasin, SacRB_USGS1802, sierranevada
 
 STARTYR=1985
 ENDYR=2005
@@ -22,10 +22,28 @@ elif [ "$BASINSHAPE" = "SacRB_USGS1802" ]; then
   MAXLAT=43.0
   MINLON=-128.0
   MAXLON=-113.0
+elif [ "$BASINSHAPE" = "sierranevada" ]; then
+  MINLAT=32.0
+  MAXLAT=43.0
+  MINLON=-128.0
+  MAXLON=-113.0
 else
   echo "Unknown BASINSHAPE: $BASINSHAPE"
   exit 1
 fi
+
+KEEP_MERGED=false
+for arg in "$@"; do
+  case $arg in
+    --keep-merged)
+      KEEP_MERGED=true
+      shift # Remove --keep-merged from processing
+      ;;
+    *)
+      # Unknown option
+      ;;
+  esac
+done
 
 ######################################################################################
 
@@ -96,8 +114,12 @@ else
   env_parallel run_ncl ::: "NLDAS" "L15" "E3SM" "JRA"
 fi
 
-echo "Deleting unmasked files"
-rm -v *_merged.nc
+if [ "$KEEP_MERGED" = false ]; then
+  echo "Deleting unmasked files"
+  rm -v *_merged.nc
+else
+  echo "--keep-merged option detected, not deleting unmasked files"
+fi
 
 # Loop over files ending in _masked.nc and rename them
 for file in *_masked.nc; do
