@@ -9,6 +9,14 @@ perform_analysis=true
 force_purge=true
 UQSTR=""
 
+echo "USGS_gauge: $USGS_gauge"
+echo "BASINSHAPE: $BASINSHAPE"
+echo "auto_domain_climo: $auto_domain_climo"
+echo "merge_pngs: $merge_pngs"
+echo "perform_analysis: $perform_analysis"
+echo "force_purge: $force_purge"
+echo "UQSTR: $UQSTR"
+
 ######################################################################################
 
 ## Initialize conda and load env
@@ -31,6 +39,7 @@ done
 
 OUTPUTDIR="./output/$BASINSHAPE/"
 if [ -n "$UQSTR" ]; then
+  mv -fv "$OUTPUTDIR" "./output/tmp_folder"
   NEW_OUTDIR="${OUTPUTDIR/${BASINSHAPE}/${BASINSHAPE}_${UQSTR}}"
 else
   NEW_OUTDIR="$OUTPUTDIR"
@@ -145,6 +154,7 @@ if [ -n "$UQSTR" ]; then
   if [ -d "$OUTPUTDIR" ]; then
     mv "$OUTPUTDIR" "$NEW_OUTDIR"
     echo "Moved $OUTPUTDIR to $NEW_OUTDIR"
+    mv -fv "./output/tmp_folder" "$OUTPUTDIR"
   else
     echo "Directory $OUTPUTDIR does not exist"
   fi
