@@ -132,7 +132,7 @@ figsize = (6.5, 5)            # Leave as constant to format panels in LaTeX corr
 title_position = [0.5, 0.92]  # If the second number is smaller, title is moved "down" y-axis
 
 ###-----> Write out histograms of various statistical variables
-NBINS = 8
+NBINS = 10
 ytick_step_size = 0.2     # Set step size for even number ticks
 
 ii=0 # Iteration integer for getting labellist
@@ -176,7 +176,7 @@ for var in varlist:
         global_y_max = max(global_y_max, hist.max())
     if global_y_min == global_y_max:
         global_y_max += 0.1
-    global_y_max = global_y_max * 1.05
+    global_y_max = global_y_max + 0.03
     print('global_y_max', global_y_max)
 
     fig = plt.figure(figsize=figsize)
@@ -195,11 +195,21 @@ for var in varlist:
 
         #print(f"{label} y-axis limits before tick adjustment: {ax.get_ylim()}")
 
-        # Customize y-ticks to add a buffer
-        y_ticks = np.arange(global_y_min, global_y_max + ytick_step_size, ytick_step_size)
-        y_tick_labels = ['' if i == 0 or i == len(y_ticks) - 1 else f"{tick:.1f}" for i, tick in enumerate(y_ticks)]
+        # Get the current y-axis limits
+        original_ylim = ax.get_ylim()
+
+        # Calculate y-ticks within the exact current limits
+        y_ticks = np.arange(original_ylim[0], original_ylim[1] + ytick_step_size, ytick_step_size)
+
+        # Set the y-ticks on the axis
         ax.set_yticks(y_ticks)
+
+        # Create labels for the y-ticks, omitting 0
+        y_tick_labels = [f"{tick:.1f}" if tick != 0 else '' for tick in y_ticks]
         ax.set_yticklabels(y_tick_labels)
+
+        # Reapply the original y-limits to ensure they stay the same
+        ax.set_ylim(original_ylim)
 
         #print(f"{label} y-axis limits after tick adjustment: {ax.get_ylim()}")
 
