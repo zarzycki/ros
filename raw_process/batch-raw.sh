@@ -1,8 +1,8 @@
 #!/bin/bash
 
-RAWDIR="/Users/cmz5202/NetCDF/ros/"
-ROSREPO="/Users/cmz5202/Software/ros/"
-BASINSHAPE="srb"       # srb, WillametteBasin, SacRB_USGS1802, sierranevada
+ROSREPO=$1
+RAWDIR=$2
+BASINSHAPE=$3      # srb, WillametteBasin, SacRB_USGS1802, sierranevada
 
 STARTYR=1985
 ENDYR=2005
@@ -31,6 +31,17 @@ else
   echo "Unknown BASINSHAPE: $BASINSHAPE"
   exit 1
 fi
+
+# verify things are set correctly
+echo "ROSREPO is set to: $ROSREPO"
+echo "RAWDIR is set to: $RAWDIR"
+echo "BASINSHAPE is set to: $BASINSHAPE"
+echo "STARTYR is set to: $STARTYR"
+echo "ENDYR is set to: $ENDYR"
+echo "MINLAT is set to: $MINLAT"
+echo "MAXLAT is set to: $MAXLAT"
+echo "MINLON is set to: $MINLON"
+echo "MAXLON is set to: $MAXLON"
 
 KEEP_MERGED=false
 for arg in "$@"; do

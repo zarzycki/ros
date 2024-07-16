@@ -25,12 +25,18 @@ conda uninstall ncl  ### or mamba
 
 The instructions assume you are in the top level of the ROS repo. `ROSREPO` defines this location.
 
+An example of setting these folders follows:
+
+```
+ROSREPO="/Users/cmz5202/Software/ros/"
+RAWDATA="/Users/cmz5202/NetCDF/ros/"
+```
+
 ### 1. Create "merged" and "masked" files from raw climate data
 
 ```
-cd $ROSREPO/raw-process
-# Set ROSREPO and RAWDIR and BASINSHAPE in batch-raw.sh
-bash batch-raw.sh
+cd $ROSREPO/raw_process
+bash batch-raw.sh $ROSREPO $RAWDATA "srb"
 cd ..
 ```
 
@@ -41,6 +47,15 @@ To generate a merged file over a different CONUS basin, adjust the lat/lon setti
 This will create four additional files in the "netcdf" subfolder of the repo, but with the data masked over the SRB (`BASINSHAPE="srb"`)
 
 To generate masked files for a different basin, first put a set of shapefiles in a unique subdirectory under the "shapes" directory. Then update `batch-mask.sh` to point to this using the `BASINSHAPE` variable. `WillametteBasin` is commented out but included as an example.
+
+An example of calling the script with additional basins:
+
+```
+cd $ROSREPO/raw_process
+bash batch-raw.sh $ROSREPO $RAWDATA "WillametteBasin"
+bash batch-raw.sh $ROSREPO $RAWDATA "SacRB_USGS1802"
+cd ..
+```
 
 **NOTE**: If NCL is keeping "zero" values after masking, ex:
 
